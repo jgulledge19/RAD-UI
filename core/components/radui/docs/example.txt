@@ -1,0 +1,236 @@
+<!-- The Tabs -->
+[[raduiTabs?
+  &loadJQuery=`false`
+  &tab1=`EGroups Grid`
+  &tab1Content=`[[+mygrid]]`
+  &tab2=`Visual Reports`
+  &tab2Content=`[[+myChart]]`
+]]
+<!-- This is the Grid -->
+[[!raduiGrid? 
+  &dataUrl=`[[++site_url]][[~2103]]`
+  &toPlaceholder=`mygrid`
+  &loadJQuery=`false`
+  &columns=`
+  {
+    "edit": {
+         "id": "edit", 
+         "name": "Edit", 
+         "field": "edit",
+         "width": "50",
+         "onLoadVisible": "true",
+         "formatter": "actionLinkFormatter"
+     },
+     "delete": {
+         "id": "delete", 
+         "name": "Delete", 
+         "field": "delete",
+         "width": "60",
+         "onLoadVisible": "true",
+         "formatter": "actionLinkFormatter"
+     }, 
+     "priority": {
+       "field": "priority",
+       "name": "Priority",
+       "width": "70",
+       "sortable": "true",
+       "editor": "Slick.Editors.Integer",
+       "onLoadVisible": "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+       "holderCSSClass": "medium spaceRight"
+       
+    },
+    "capital_type": {
+       "id": "capital_type",
+       "field": "capital_type",
+       "name": "Type",
+       "width": "70",
+       "sortable": "true",
+       "editor": "Slick.Editors.BasicSelect",
+       "selectOptions": {"Large":"Large","Small":"Small" },
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+       "holderCSSClass": "medium spaceRight"
+    },
+    "vp": {
+       "id": "vp",
+       "field": "vp",
+       "name": "VP",
+       "width": "70",
+       "sortable": "true",
+       "editor": "Slick.Editors.BasicSelect",
+       "selectOptions": {
+                "Person": "person@email.com",
+                "Person2": "person@email.com"
+       },
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+       "holderCSSClass": "medium"
+    },
+     "department": { 
+         "id": "department", 
+         "name": "Department", 
+         "field": "department",
+         "editor": "Slick.Editors.Text",
+         "sortable": "true", 
+         "width": "100",
+          "require" : "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+          "holderCSSClass": "clear medium spaceRight", 
+           "CSSClass": "inputClass",
+          "search":"true"
+    },
+     "work_discipline": { 
+         "id": "work_discipline", 
+         "name": "Discipline", 
+         "field": "work_discipline",
+         "editor": "Slick.Editors.Text",
+         "sortable": "true", 
+         "width": "100",
+          "require" : "true",
+          "onLoadVisible": "false",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+          "holderCSSClass": "medium spaceRight", 
+           "CSSClass": "inputClass",
+          "search":"true"
+    },
+     "amount": {
+         "id": "amount", 
+         "name": "Amount", 
+         "field": "amount",
+         "editor": "Slick.Editors.Integer",
+         "sortable": "false", 
+         "width": "60",
+         "onLoadVisible": "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+     
+       "holderCSSClass": " clear medium spaceRight",
+           "CSSClass": ""
+    },
+     "actual_amount": {
+         "id": "actual_amount", 
+         "name": "Actual", 
+         "field": "actual_amount",
+         "editor": "Slick.Editors.Integer",
+         "sortable": "false", 
+         "width": "60",
+         "onLoadVisible": "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+     
+       "holderCSSClass": "medium spaceRight",
+           "CSSClass": ""
+    },
+    "maintenance": {
+         "id": "maintenance", 
+         "name": "Maintenance", 
+         "field": "maintenance",
+         "editor": "Slick.Editors.BasicSelect",
+         "selectOptions": {"Planned": "Planned", "Deferred": "Deferred"},
+         "sortable": "true", 
+         "width": "70",
+         "onLoadVisible": "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+     
+       "holderCSSClass": "medium spaceRight",
+           "CSSClass": "",
+          "search":"true"
+    },
+    
+    "budget_year": {
+         "id": "budget_year", 
+         "name": "Year", 
+         "field": "budget_year",
+         "editor": "Slick.Editors.Integer",
+         "sortable": "true", 
+         "width": "60",
+         "onLoadVisible": "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+     
+       "holderCSSClass": "clear medium spaceRight",
+           "CSSClass": ""
+    },
+    "status": {
+         "id": "status", 
+         "name": "Status", 
+         "field": "status",
+         "editor": "Slick.Editors.BasicSelect",
+         "selectOptions": {"Approved": "Approved","Rejected":"Rejected","Submitted":"Submitted","Hold":"Hold"},
+         "sortable": "true", 
+         "width": "70",
+         "onLoadVisible": "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+     
+       "holderCSSClass": "medium spaceRight",
+           "CSSClass": "",
+          "search":"true"
+    },
+    
+     "description": {
+         "id": "description", 
+         "name": "Description", 
+         "field": "description",
+         "editor": "Slick.Editors.LongText",
+         "sortable": "false", 
+         "width": "200",
+         "onLoadVisible": "true",
+       "onAddVisible": "true",
+       "onEditVisible": "true",
+     
+          "holderCSSClass": "clear full", 
+           "CSSClass": ""
+    }
+    }
+  `
+]]
+
+<!-- Charts -->
+[[RadUiCharts?
+  &jsonUrl=`[[++site_url]][[~2103]]`
+  &loadJQuery=`false`
+  &toPlaceholder=`myChart`
+  &onLoadData=`false`
+  &options=`{
+        bars: { show: true },
+        xaxis: {
+            mode: "categories",
+            tickLength: 1
+        }
+    }`
+
+  &xAxis=`budget_year`
+  &yAxis=`Kount`
+  &xQuote=`1`
+  &groupby=`budget_year`
+  &label=`Number of Requests per year`
+]]
+
+<!-- Charts2 -->
+[[RadUiCharts?
+  &containerID=`chartContainer2`
+  &jsonUrl=`[[++site_url]][[~2103]]`
+  &loadJQuery=`false`
+  &toPlaceholder=`vpChart`
+  &onLoadData=`false`
+  &options=`{
+        lines: { show: true },
+        points: { show: true },
+        xaxis: {
+            mode: "categories",
+            tickLength: 1
+        }
+    }`
+
+  &xAxis=`vp`
+  &yAxis=`Kount`
+  &xQuote=`1`
+  &groupby=`vp`
+  &label=`Number of Requests per VP`
+]]

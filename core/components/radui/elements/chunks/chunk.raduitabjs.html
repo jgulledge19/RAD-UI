@@ -1,0 +1,13 @@
+<!-- jQuery -->
+[[+loadJQuery:equals=`true`:then=`<script type="text/javascript" src="assets/components/radui/js/jquery/ui/js/jquery-1.7.2.min.js"></script>`:else=``]]
+
+<!-- Tooltip for hovering over buttons -->
+<script src="assets/components/radui/js/jquery/jquery.tools.min.js"></script>
+<!-- Can also do CDN: http://cdn.jquerytools.org/1.2.7/all/jquery.tools.min.js-->
+
+<script>
+$(function() {
+    $("#[[+containerID]] ul.tabs").tabs("#[[+containerID]] div.panes > div", { history: [[+history]] } );
+});
+</script>
+<link rel="stylesheet" media="all" href="assets/components/radui/css/tabs.css" />

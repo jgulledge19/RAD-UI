@@ -1,0 +1,87 @@
+
+<form name="basicInfo" action="" method="post" id="json" class="wide">
+
+  <div class="buttons">
+    <button type="submit" class="positive" value="Send" name="submit"><img src="/login/images/apply/check.gif" alt="Submit" /> Save </button>
+  </div>
+<ul class="clear">
+     <li class="medium">
+          <label for="sel_db_table">*Select DB Table</label> 
+          <select id="sel_db_table" name="db_table"> 
+               <option>Select</option>
+          </select>
+     </li>
+</ul>
+<fieldset id="fieldset1" class="clear">
+    <legend>Field</legend>
+    <ul id="add_stuff">
+        <li class="medium spaceRight">
+            <label for="txt_name">*Name</label> 
+            <input id="txt_name" class="info_change" title="Enter in the name of the field." type="text" name="field" value="[[!+fi.field]]" />
+        </li>
+        <li class="medium spaceRight"><label for="txt_display_name">*Display name</label> <input id="txt_display_name" class="info_change" title="Enter in the field's display name." type="text" name="name" value="[[!+fi.name]]" /></li>
+        <li class="medium spaceRight"><label for="txt_width">*Width</label> <input id="txt_width" class="info_change" title="Enter in the width of the field" type="text" name="width" value="[[!+fi.width]]" /></li>
+        <li class="clear autoWidth spaceRight">
+            <input id="sortable" type="checkbox" name="sortable" value="true" [[!+fi.sortable:FormItIsChecked=`true`]] class="radio" >
+            <label for="sortable">Sortable</label>
+        </li>
+        <li class="autoWidth spaceRight">
+            <input id="visible" type="checkbox" name="onLoadVisible" value="true" [[!+fi.color:FormItIsChecked=`true`]] class="radio" >
+            <label for="visible">onLoadVisible</label>
+        </li>
+        <li class="autoWidth spaceRight">
+            <input id="addVisible" type="checkbox" name="onAddVisible" value="true" [[!+fi.color:FormItIsChecked=`true`]] class="radio" >
+            <label for="addVisible">onAddVisible</label>
+        </li>
+        <li class="autoWidth spaceRight">
+            <input id="editVisible" type="checkbox" name="onEditVisible" value="true" [[!+fi.color:FormItIsChecked=`true`]] class="radio" >
+            <label for="editVisible">onEditVisible</label>
+        </li>
+        <li class="autoWidth spaceRight">
+            <input id="required" type="checkbox" name="required" value="true" [[!+fi.color:FormItIsChecked=`true`]] class="radio" >
+            <label for="required">Required</label>
+        </li>
+        <li class="clear medium spaceRight">
+            <label for="sel_editor">*Editor</label> 
+            <select id="sel_editor" name="editor"> 
+                <option>Select</option>
+                <option value="Slick.Editors.BasicSelect" [[!+fi.editor:FormItIsSelected=`Slick.Editors.BasicSelect`]]>Slick.Editors.BasicSelect</option>
+                <option value="Slick.Editors.Text" [[!+fi.editor:FormItIsSelected=`Slick.Editors.Text`]]>Slick.Editors.Text</option>
+                <option value="Slick.Editors.LongText" [[!+fi.editor:FormItIsSelected=`Slick.Editors.LongText`]]>Slick.Editors.LongText</option>
+                <option value="Slick.Editors.YesNoSelect" [[!+fi.editor:FormItIsSelected=`Slick.Editors.YesNoSelect`]]>Slick.Editors.YesNoSelect</option>
+                <option value="Slick.Editors.Checkbox" [[!+fi.editor:FormItIsSelected=`Slick.Editors.Checkbox`]]>Slick.Editors.Checkbox</option>
+                <option value="Slick.Editors.Integer" [[!+fi.editor:FormItIsSelected=`Slick.Editors.Integer`]]>Slick.Editors.Integer</option>
+                <option value="Slick.Editors.Date" [[!+fi.editor:FormItIsSelected=`Slick.Editors.Date`]]>Slick.Editors.Date</option>
+                <option value="Slick.Editors.PercentComplete" [[!+fi.editor:FormItIsSelected=`Slick.Editors.PercentComplete`]]>Slick.Editors.PercentComplete</option>
+            </select>
+        </li>
+        <li class="medium spaceRight">
+            <label for="sel_type">*Select Type</label> 
+            <select id="sel_type" name="selectType"> 
+                <option>Select</option>
+                <option value="Json" [[!+fi.selectType:FormItIsSelected=`Json`]]>JSON</option>
+            </select>
+        </li>
+        <li class="medium">
+            <label for="sel_options">*Select Options</label> 
+            <input id="sel_options" class="info_change" title="Enter in the select options" type="text" name="selectOptions" value="[[!+fi.selectOptions]]" />
+        </li>
+    </ul>
+</fieldset>
+<div id="TextBoxesGroup">
+</div>
+<div id="add_button">
+<input type="button" value="Add Another Field" id="add_more"/>
+</div>
+<fieldset id="fieldset1" class="clear">
+<ul>
+<legend>JSON Output</legend>
+<li class="large"><textarea id="jsonoutput"></textarea></li>
+</ul>
+
+</fieldset>
+  <div class="buttons">
+    <button type="submit" class="positive" value="Send" name="submit"><img src="/login/images/apply/check.gif" alt="Submit" /> Save </button>
+  </div>
+  
+</form>

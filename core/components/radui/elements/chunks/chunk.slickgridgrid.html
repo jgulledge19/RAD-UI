@@ -1,0 +1,95 @@
+<div id="[[+gridID]]Container" class="gridContainer" style="position:relative; clear: both;">
+    <!-- Forms -->
+    <div id="[[+gridID]]AddFormDiv">
+        <form id="[[+gridID]]AddForm" action="[[+addUrl]]" method="post" class="formColumn">
+            <div class="message"></div>
+            <input type="hidden" name="action" value="create" />
+            <ul>
+                [[+addForm]]
+            </ul>
+        </form>
+    </div>
+    <div id="[[+gridID]]EditFormDiv">
+        <form id="[[+gridID]]EditForm" action="[[+editUrl]]" method="post" class="formColumn">
+            <div class="message"></div>
+            <input type="hidden" name="action" value="update" />
+            <input type="hidden" name="id" value="" />
+            <ul>
+                [[+editForm]]
+            </ul>
+        </form>
+    </div>
+    <div id="[[+gridID]]DeleteFormDiv">
+        <form id="[[+gridID]]DeleteForm" action="[[+deleteUrl]]" method="post" class="formColumn">
+            <div class="message"></div>
+            <h2>Our you sure you want to delete this record?</h2>
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="id" value="" />
+            [[+deleteForm]]
+        </form>
+    </div>
+    
+    <div id="[[+gridID]]ImportFormDiv">
+        <form id="[[+gridID]]ImportForm" action="[[+importUrl]]" method="post" class="formColumn">
+            <div class="message"></div>
+            <h2>Chose a CSV file to import.</h2>
+            <p>The first row of the file should be valid field name.</p>
+            <input type="hidden" name="action" value="import" />
+            <input type="file" name="csvFile" value="Upload File" />
+            [[+importForm]]
+        </form>
+    </div>
+
+    <!-- Info Bar -->
+    <div style="width:98%; clear:both;">
+        
+        <div class="grid-header">
+            <span class="gridTitle">Information</span>
+            <span id="[[+gridID]]JsonMessage"></span>
+            <!-- <span style="float:right" class="ui-icon ui-icon-search" title="Toggle search panel" onclick="toggleFilterRow()"></span> -->
+        </div>
+        
+        <div class="buttonBar">
+			<div id="full_screen">
+                <div id="enable_full" title="Enable Full Screen"></div>
+                <div id="disable_full" title="Disable Full Screen"></div>
+            </div>
+            <button title="Add Record" id="[[+gridID]]AddRecord"></button>
+            <button title="Export as CSV" id="[[+gridID]]Export"></button>
+			<button title="Import Excel" id="[[+gridID]]Import"></button>
+			<button title="Refresh Table" id="[[+gridID]]Refresh"></button>
+            <div id="[[+gridID]]ShowColumns">
+                <div>
+                    Visible Columns 
+                    <div id="expandColumnForm" title="View Visible Columns"></div>
+                    <div id="closeColumnForm" title="Close Visible Columns"></div>
+                </div>                
+                <form class="wide">
+					<div id="[[+gridID]]closeColumnForm">Close X</div>
+                    <ul>
+                        <!-- This will be written by JavaScript -->
+                    </ul>
+                 <!--   <button id="changeColumns"> Change Columns </button> -->
+                </form>
+                <span style="clear:both;"></span>
+            </div>
+            
+        </div>
+        
+        
+        <div id="[[+gridID]]Search" class="gridSearch">
+            <form>
+                <ul>
+                    [[+searchForm]]
+                </ul>
+            </form>
+        </div>
+        
+        <div id="[[+gridID]]" style="width:100%;height:500px;">
+            
+        </div>
+        
+        <div id="[[+gridID]]Pager" style="width:100%;height:20px;"></div>
+    </div>
+    
+</div>

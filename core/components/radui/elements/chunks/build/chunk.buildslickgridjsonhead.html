@@ -1,0 +1,143 @@
+<link href="assets/templates/youthevents/css/forms.css" rel="stylesheet" type="text/css"/>
+<style type="text/css" media="all">
+    #delete {
+        width:25px;
+        float:right;
+        cursor:pointer;
+    }
+    #add_more {
+        cursor:pointer;
+    }
+</style>
+
+<script src="http://cdn.jquerytools.org/1.2.7/all/jquery.tools.min.js"></script>
+<script src="assets/components/radui/js/jquery/jquery.json-1.3.min.js"></script>
+<script type="text/javascript">
+$(function() {
+    $("ul.tabs").tabs("div.panes > div");
+    var counter = 1;
+    
+    $('#add_more').click(function() {
+        if(counter == 24) {
+            document.getElementById("add_button").style.display="none";
+        }
+        counter++;
+        var someText = createFieldSet(counter);
+    
+        var newTextBoxDiv = $(document.createElement('div'));
+        // @ TODO: Revise
+        newTextBoxDiv
+             .attr("id", 'TextBoxDiv' + counter);
+     
+        newTextBoxDiv.html(someText);
+     
+        newTextBoxDiv.appendTo("#TextBoxesGroup");
+     
+        $("#delete" + counter).click(function () { 
+            $("#TextBoxDiv" + counter).remove();
+            counter--;
+            if(counter<=24) {
+                document.getElementById("add_button").style.display="block";
+            };
+         });
+            
+    });
+    $('button[type=submit]').click(function() {
+        var jsonStr = '';
+        // Loop through i as long as it is less than or equal to the counter
+        for (i=1; i<=counter; i++ ) {
+            // Go through and get all the name attributes and values of the input fields, checkboxes, and selects that are in the fieldsets
+            var fieldsetStr = $("#fieldset" + i + " input:text,#fieldset" + i + " input:checkbox:checked,#fieldset" + i + " select")
+                .map(function(){
+                    inputTotal = '"' + this.name + '"' + ": " + '"' + this.value + '"'; 
+                    return inputTotal;
+                })
+                .get()
+                // Add a new line and spaces onto it to create the organized styling
+                .join(',\r\n   ');
+            if ( i > 1 ) {
+                jsonStr += ',';
+            }
+            jsonStr += '"' + $('#fieldset'+ i +' input[name*="field"]').val() + '"' + ": {\n   " + fieldsetStr + "\n}\n";
+            
+        }
+        // Set the value of the textbox JSON Output to jsonStr
+        $("#jsonoutput").val(jsonStr);
+        // Return false so the submit button doesn't actually submit, but runs this function instead
+        return false;
+    });
+
+});
+/**
+ * Creat the feild set
+ * @param (Int) counter - the counter number
+ * @return (String) str - html string
+ */
+function createFieldSet(counter) {
+    var str = '<fieldset id="fieldset' + counter + '" class="clear">' + "\r\n"
+        + '<legend>Field ' + counter + '</legend>' + "\r\n"
+        + '<div id="delete">' + "\r\n"
+        + '<a id="delete' + counter +'><img src="assets/components/newsmanager/images/delete.png" alt="Delte" /></a></div>'
+        + '<ul id="add_stuff">' + "\r\n"
+            +'<li class="medium spaceRight">' + "\r\n"
+                + '<label for="txt_name' + counter + '">*Name</label>' + "\r\n"
+                + '<input name="field" id="txt_name' + counter  + '" class="info_change" title="Enter in the name of the field." type="text" />'  + "\r\n" 
+            + '</li>' + "\r\n" 
+            + '<li class="medium spaceRight">' + "\r\n"
+                + '<label for="txt_display_name' + counter + '">*Display name</label> ' + "\r\n" 
+                + '<input name="name" id="txt_display_name"' + counter + '" class="info_change" title="Enter in the fields display name." type="text" />' + "\r\n" 
+            + '</li>' + "\r\n" 
+            + '<li class="medium spaceRight"> ' + "\r\n" 
+                + '<label for="txt_width"' + counter + '">*Width</label>'  + "\r\n" 
+                + '<input name="width" id="txt_width"' + counter + '" class="info_change" title="Enter in the width of the field" type="text" />' + "\r\n" 
+            + '</li>'  + "\r\n" 
+            + '<li class="clear autoWidth spaceRight">' + "\r\n"
+                + '<input name="sortable" id="sortable' + counter + '" type="checkbox"' + counter + '" value="true" class="radio" >' + "\r\n"
+                + '<label for="sortable' + counter + '">Sortable</label>'  + "\r\n"
+            + '</li>'  + "\r\n"
+            + '<li class="autoWidth spaceRight">'  + "\r\n"
+                + '<input name="onLoadVisible" id="visible' + counter + '"" type="checkbox" value="true" class="radio" >' + "\r\n"
+                + '<label for="visible' + counter + '">onLoadVisible</label>'+ "\r\n"
+            + '</li>'  + "\r\n"
+            + '<li class="autoWidth spaceRight">' + "\r\n"
+                + '<input name="onAddVisible" id="addVisible' + counter + '" type="checkbox" value="true" class="radio" >' + "\r\n"
+                + '<label for="addVisible' + counter + '">onAddVisible</label>'
+            + '</li>' + "\r\n"
+            + '<li class="autoWidth spaceRight">' + "\r\n"
+                + '<input name="onEditVisible" id="editVisible' + counter + '" type="checkbox" value="true" class="radio" >'  + "\r\n"
+                + '<label for="editVisible' + counter + '">onEditVisible</label>' + "\r\n"
+            + '</li>' + "\r\n"
+            + '<li class="autoWidth spaceRight">' + "\r\n"
+                + '<input name="required" id="required' + counter + '" type="checkbox" value="true" class="radio" >' + "\r\n"
+                + '<label for="required' + counter + '">Required</label>' + "\r\n"
+            + '</li>' + "\r\n"
+            + '<li class="clear medium spaceRight">' + "\r\n"
+                + '<label for="sel_editor' + counter + '">*Editor</label>' + "\r\n" 
+                + '<select id="sel_editor' + counter + '" name="editor" >' + "\r\n"
+                    + '<option>Select</option>' + "\r\n"
+                    + '<option value="Slick.Editors.BasicSelect" >Slick.Editors.BasicSelect</option>' + "\r\n"
+                    + '<option value="Slick.Editors.Text" >Slick.Editors.Text</option>' + "\r\n"
+                    + '<option value="Slick.Editors.LongText" >Slick.Editors.LongText</option>' + "\r\n"
+                    + '<option value="Slick.Editors.YesNoSelect" >Slick.Editors.YesNoSelect</option>' + "\r\n"
+                    + '<option value="Slick.Editors.Checkbox" >Slick.Editors.Checkbox</option>' + "\r\n"
+                    + '<option value="Slick.Editors.Integer" >Slick.Editors.Integer</option>' + "\r\n"
+                    + '<option value="Slick.Editors.Date" >Slick.Editors.Date</option>' + "\r\n"
+                    + '<option value="Slick.Editors.PercentComplete" >Slick.Editors.PercentComplete</option>' + "\r\n"
+                + '</select>' + "\r\n"
+            + '</li>' + "\r\n"
+            + '<li class="medium spaceRight">' + "\r\n"
+                + '<label for="sel_type' + counter + '">*Select Type</label>' + "\r\n"
+                + '<select id="sel_type' + counter + '" name="selectTtype" >' + "\r\n"
+                    + '<option>Select</option>' + "\r\n"
+                    + '<option value="Json" >JSON</option>' + "\r\n"
+                + '</select>' + "\r\n"
+            + '</li>' + "\r\n"
+            + '<li class="medium">' + "\r\n"
+                + '<label for="sel_options' + counter + '">*Select Options</label>' + "\r\n"
+                + '<input name="selectOptions" id="sel_options' + counter + '" class="info_change" title="Enter in the select options" type="text"  />' + "\r\n"
+            + '</li>' + "\r\n"
+        + '</ul>' + "\r\n"
+    + '</fieldset>';
+    return str;
+} 
+</script>

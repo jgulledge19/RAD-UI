@@ -1,0 +1,313 @@
+<link rel="stylesheet" href="[[++assets_url]]/components/radui/js/slickgrid/slick.grid.css" type="text/css"/>
+
+<link rel="stylesheet" href="[[++assets_url]]/components/radui/js/slickgrid/css/slickgrid.css" type="text/css"/>
+<link rel="stylesheet" href="[[++assets_url]]/components/radui/js/slickgrid/css/slickgrid.controls.css" type="text/css"/>
+
+<link rel="stylesheet" href="[[++assets_url]]/components/radui/js/slickgrid/css/smoothness/jquery-ui-1.8.16.custom.css" type="text/css"/>
+<!-- <link rel="stylesheet" href="examples.css" type="text/css"/> -->
+  <style>
+    .cell-title {
+      font-weight: bold;
+    }
+
+    .cell-effort-driven {
+      text-align: center;
+    }
+    .cell-title {
+      font-weight: bold;
+    }
+
+    .cell-effort-driven {
+      text-align: center;
+    }
+
+    .item-details-form {
+      z-index: 10000;
+      display: inline-block;
+      border: 1px solid black;
+      margin: 8px;
+      padding: 10px;
+      background: #efefef;
+      -moz-box-shadow: 0px 0px 15px black;
+      -webkit-box-shadow: 0px 0px 15px black;
+      box-shadow: 0px 0px 15px black;
+
+      position: absolute;
+      top: 10px;
+      left: 150px;
+    }
+
+    .item-details-form-buttons {
+      float: right;
+    }
+
+    .item-details-label {
+      margin-left: 10px;
+      margin-top: 20px;
+      display: block;
+      font-weight: bold;
+    }
+
+    .item-details-editor-container {
+      width: 200px;
+      height: 20px;
+      border: 1px solid silver;
+      background: white;
+      display: block;
+      margin: 10px;
+      margin-top: 4px;
+      padding: 0;
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+    .ui-widget {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 0.8em;
+    }
+    /* from example.css */
+    /* custom */
+    div.loading-indicator {
+        text-align:center;
+        position: fixed;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: #ccc;
+        opacity: 0.7;
+        z-index: 99;
+    }
+    div.loading-indicator p{
+        font-size: 2em;
+        margin-top: 370px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .grid-header {
+        line-height: 22px;
+        min-height: 22px;
+        border: 1px solid #e7e7e7;
+        background: #f7fccd;
+        position:relative;
+        padding-left: 15px;
+        font-size: .9em;
+    }
+	/* Edit and Add Forms */
+	#[[+gridID]]EditForm ul, #[[+gridID]]AddForm ul {
+		display:block;
+		list-style:none;
+	}
+	#[[+gridID]]EditForm ul li, #[[+gridID]]AddForm ul li {
+		display:block;
+		list-style:none;
+	}
+	#[[+gridID]]EditForm label, #[[+gridID]]EditForm input, #[[+gridID]]EditForm textarea, #[[+gridID]]EditForm select, #[[+gridID]]AddForm label, #[[+gridID]]AddForm input, #[[+gridID]]AddForm textarea, #[[+gridID]]AddForm select {
+		float:left;
+		clear:both;
+		margin-bottom:10px;
+	}
+	/* Search Form */
+	#[[+gridID]]Search {
+		background:#E1E1E1;
+		border-top:1px solid #999;
+		border-bottom:1px solid #999;
+		min-height:85px;
+	}
+	#[[+gridID]]Search form ul {
+		display:block;
+		list-style:none;
+		margin-left:10px;
+	}
+	#[[+gridID]]Search h3 {
+		margin:5px 0 5px 10px;
+	}
+	#[[+gridID]]Search form ul li {
+		margin-bottom:10px;
+		float: left;
+		width:auto;
+		margin-right:15px;
+	}
+	#[[+gridID]]Search form label, #[[+gridID]]Search form input, #[[+gridID]]Search form select {
+		display:block;
+		clear:both;
+		float:left;
+	}
+    /* show columns */
+   div#showColumns {
+        border: 1px solid #a2a2a2;
+        background: #e7e7e7;
+        position:relative;
+        font-size: .9em;
+    }
+    div#showColumns div {
+        height: 30px;
+        line-height: 30px;
+        text-align:right;
+        padding-right: 20px;
+    }
+    div#showColumns div span {
+        display: block;
+        width: 60px;
+        padding-left: 3px;
+        float:right;
+        text-align:left;
+    }
+    div#showColumns div span:hover {
+        cursor: pointer;
+    }
+	#[[+gridID]]closeColumnForm {
+		float:right;
+		margin:10px 10px 0 0;
+		font-size:14pt;
+		cursor:pointer;
+	}
+	#[[+gridID]]ShowColumns form ul {
+		clear:both;
+	}
+    /* full screen */
+    .fullScreen {
+        position:absolute !important;
+        left:0;
+        top:0;
+        width:100%;
+        height:100%;
+        z-index:1000;
+        clear:none !important;
+        background:#FFFFFF;
+		padding:15px 0 0 20px;
+    }
+	.fullScreen #[[+gridID]]ShowColumns form {
+		position:absolute;
+		top:63px;
+	}
+    div#full_screen {
+		height:30px;
+		width:30px;
+		margin-top:2px;
+		margin-left:10px;
+    }
+    div#full_screen:hover {
+        cursor:pointer;
+    }
+	#enable_full {
+		height:30px;
+		width:30px;
+		background:url([[++assets_url]]/components/radui/templates/images/fullscreen.png);
+		background-repeat:no-repeat;
+	}
+    #disable_full {
+		height:30px;
+		width:30px;
+		background:url([[++assets_url]]/components/radui/templates/images/normalscreen.png);
+		background-repeat:no-repeat;
+        display:none;
+    }
+	/* Button Bar Style */
+	.buttonBar {
+		width:100%;
+		height:34px;
+		background:#E1E1E1;
+	}
+	.buttonBar div,.buttonBar button {
+		float:left;
+	}
+	.buttonBar button {	
+		margin-left:10px;
+		margin-top:2px;
+	}
+	#[[+gridID]]AddRecord {
+		background:url([[++assets_url]]/components/radui/templates/images/add_new.png);
+		height:30px;
+		width:30px;
+		border:none;
+		cursor:pointer;
+	}
+	#[[+gridID]]Export {
+		background:url([[++assets_url]]/components/radui/templates/images/export.png);
+		background-repeat:no-repeat;
+		width:30px;
+		height:30px;
+		border:none;
+		cursor:pointer;
+	}
+	#[[+gridID]]Import {
+		background:url([[++assets_url]]/components/radui/templates/images/import.png);
+		background-repeat:no-repeat;
+		width:30px;
+		height:30px;
+		border:none;
+		cursor:pointer;
+	}
+	#[[+gridID]]ShowColumns {
+		float:right;
+	}
+	#[[+gridID]]ShowColumns form {
+		width:50%;
+		height:90%;
+		border:1px solid #0046ad;
+		position:absolute;
+		top:48px;
+		left:48%;
+		background:#FFFFFF;
+		z-index:500;
+	}
+	#[[+gridID]]ShowColumns form ul {
+		list-style:none;
+	}
+	#[[+gridID]]ShowColumns form ul li {
+		width:110px;
+		margin-left:73px;
+		margin-top:10px;
+		float:left;
+	}
+	#expandColumnForm, #closeColumnForm {
+		cursor:pointer;
+		float:right;
+		margin:3px 5px 0 5px;
+	}
+	#expandColumnForm {
+		background:url([[++assets_url]]/components/radui/templates/images/expand.png);
+		background-repeat:no-repeat;
+		width:30px;
+		height:30px;
+	}
+	#closeColumnForm {
+		background:url([[++assets_url]]/components/radui/templates/images/close.png);
+		background-repeat:no-repeat;
+		width:30px;
+		height:30px;
+	}
+	#[[+gridID]]Refresh {
+		background:url([[++assets_url]]/components/radui/templates/images/refresh.png);
+		background-repeat:no-repeat;
+		width:30px;
+		height:30px;
+		border:none;
+		cursor:pointer;
+	}
+	/* Tooltip in buttonBar */
+	.tooltip {
+		background:#0046ad;
+		color:#FFFFFF;
+		padding:5px;
+		z-index:2000;
+	}
+	.tooltip div {
+		font-size:12pt;
+		font-family:Tahoma;
+		font-weight:bold;
+	}
+	/* Tabs */
+	.tabs {
+		list-style:none;
+		display:block;
+		height:37px;
+		width:auto;
+		margin-bottom:10px;
+		font-weight:bold;
+	}
+	.panes {
+		clear:both;
+	}
+</style>

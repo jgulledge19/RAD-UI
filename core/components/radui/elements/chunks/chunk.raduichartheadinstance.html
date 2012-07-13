@@ -1,0 +1,95 @@
+<!-- This file will be loaded for every instance or snippet call -->
+<script type="text/javascript">
+$(function () {
+    var chartOptions = [[+options]];
+    var sendData = {
+        action: "chart",
+        xAxis: "[[+xAxis]]",
+        yAxis: "[[+yAxis]]",
+        series: "[[+series]]",
+        groupby: "[[+groupby]]",
+        label: "[[+label]]"
+    };
+    var chartData = [[+data]];
+    var placeholder = $("#[[+containerID]] .chart");
+    
+    function getChartData() {
+        var jsonUrl = '[[+jsonUrl]]';
+        if ( jsonUrl ) {
+            // then fetch the data with jQuery
+            function onDataReceived(series) {
+                // let's add it to our current data
+                //data.push(series);
+                chartData = [];
+                chartData.push(series);
+                // and plot all we got
+                $.plot(placeholder, chartData, chartOptions);
+            }
+            $.ajax({
+                url: jsonUrl,
+                type: 'GET',
+                dataType: 'json',
+                data: sendData,
+                success: onDataReceived
+            });
+        } 
+    }
+    
+    var plot = $.plot(placeholder, chartData, chartOptions);
+    
+    var onLoadData = [[+onLoadData]];
+    if ( onLoadData ) {
+        getChartData();
+    }
+    $("#[[+containerID]] .refresh").click(function () {
+        var button = $(this);
+        getChartData();
+        return false;
+    });
+    
+    // tool tips:
+    function showTooltip(x, y, contents) {
+        $('<div id="[[+containerID]]Tooltip">' + contents + '</div>').css( {
+            position: 'absolute',
+            display: 'none',
+            top: y + 15,
+            left: x + 10,
+            border: '1px solid #fdd',
+            padding: '2px',
+            'background-color': '#fee',
+            opacity: 0.80
+        }).appendTo("body").fadeIn(200);
+    }
+
+    var previousPoint = null;
+    $("#[[+containerID]] .chart").bind("plothover", function (event, pos, item) {
+        /*/ put the hover data somewhere?
+        var str = "(" + pos.x.toFixed(2) + ", " + pos.y.toFixed(2) + ")";
+        $("#hoverdata").text(str);
+        */
+        if (item) {
+            if (previousPoint != item.dataIndex) {
+                previousPoint = item.dataIndex;
+                
+                $("#[[+containerID]]Tooltip").remove();
+                var x = item.datapoint[0].toFixed(2),
+                    y = item.datapoint[1].toFixed(2);
+                
+                showTooltip(item.pageX, item.pageY,
+                            item.series.label + " of " + x + " = " + y);
+            }
+        } else {
+            $("#[[+containerID]]Tooltip").remove();
+            previousPoint = null;            
+        }
+    });
+    /*
+    $("#[[+containerID]]").bind("plotclick", function (event, pos, item) {
+        if (item) {
+            $("#clickdata").text(" - click point " + item.dataIndex + " in " + item.series.label);
+            plot.highlight(item.series, item.datapoint);
+        }
+    });
+    */
+});
+</script>

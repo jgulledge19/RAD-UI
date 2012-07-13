@@ -1,0 +1,789 @@
+<!-- Testing -->
+<script src="[[++assets_url]]/components/radui/js/slickgrid/lib/firebugx.js"></script>
+
+<!-- jQuery -->
+[[+loadJQuery:equals=`true`:then=`<script type="text/javascript" src="[[++assets_url]]/components/radui/js/jquery/ui/js/jquery-1.7.2.min.js"></script>`:else=``]]
+<!--script src="[[++assets_url]]/components/radui/js/slickgrid/lib/jquery-1.7.min.js"></script -->
+
+<!--
+<script src="[[++assets_url]]/components/radui/js/slickgrid/lib/jquery-ui-1.8.16.custom.min.js"></script>
+-->
+
+<link type="text/css" href="[[++assets_url]]/components/radui/js/jquery/ui/css/smoothness/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
+<script type="text/javascript" src="[[++assets_url]]/components/radui/js/jquery/ui/js/jquery-ui-1.8.20.custom.min.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/lib/jquery.event.drag-2.0.min.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/lib/jquery.jsonp-1.1.0.min.js"></script>
+<!-- SlickGrid -->
+<script src="[[++assets_url]]/components/radui/js/slickgrid/slick.core.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/plugins/slick.cellrangedecorator.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/plugins/slick.cellrangeselector.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/plugins/slick.cellselectionmodel.js"></script>
+<!-- <script src="../slick.formatters.js"></script> -->
+<script src="[[++assets_url]]/components/radui/js/slickgrid/slick.raduieditors.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/slick.grid.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/controls/slick.pager.js"></script>
+<script src="[[++assets_url]]/components/radui/js/slickgrid/slick.dataview.js"></script>
+<!-- custom -->
+<script src="[[++assets_url]]/components/radui/js/slickgrid/slick.jsonmodel.js"></script>
+<!-- Export data to Excel -->
+<script src="[[++assets_url]]/components/radui/js/slickgrid/table-to-csv.js"></script>
+<!-- Tooltip for hovering over buttons -->
+<script src="[[++assets_url]]/components/radui/js/jquery/jquery.tools.min.js"></script>
+<script type="text/javascript">
+$(function() {
+	$(".buttonBar button[title]").tooltip();
+	$("#enable_full[title]").tooltip();
+	$("#expandColumnForm[title]").tooltip();
+	$("#closeColumnForm[title]").tooltip();
+});
+</script>
+<script type="text/javascript" language="JavaScript">
+    
+    var currentRow = null;
+    
+    function requiredFieldValidator(value) {
+        if (value == null || value == undefined || !value.length) {
+            return {valid: false, msg: "This is a required field"};
+        } else {
+            return {valid: true, msg: null};
+        }
+    }
+    /* need a generic link formatter */
+    var actionLinkFormatter = function (row, cell, value, columnDef, dataContext) {
+        //console.log("R: " + row + " C: " + cell + " V: "+ value + " ColDef: " + columnDef.field );
+        /*return /*"<b><a href='" + dataContext["link"] + "' target=_blank>" +
+            dataContext["title"] + "</a></b><br/>" + dataContext["description"] */
+        /*
+        if ( dataContext["actionLinks"] == 'Total' ) {
+            return '<strong>Total</strong>';
+        }
+        if ( dataContext["actionLink"] ) {
+            var actions = dataContext["actionLink"].split("|");
+        } else {
+            var actions = new Array();
+        }
+        var str = '';
+        for(i = 0; i < actions.length; i++){
+            str += '';
+            switch (actions[i]) {
+                case 'Edit':
+                    str += ' <a class="[[+gridID]]Edit" data-rowIndex="'+i+'"  data-id="' + dataContext["id"] + '">Edit</a>';
+                    break;
+                case 'Delete':
+                    str += ' <a class="[[+gridID]]Delete"  data-rowIndex="'+i+'" href="" data-id="' + dataContext["id"] + '">Delete</a>';
+                    break;
+                default:
+                    str += ' <a class="[[+gridID]]'+actions[i]+'" data-rowIndex="'+i+'" href="" data-id="' + dataContext["id"] + '">'+actions[i]+'</a>';
+            }
+        } */
+        var str = '';
+        switch (columnDef.field) {
+            case 'edit':
+                str += ' <a class="[[+gridID]]Edit"  data-id="' + dataContext["id"] + '">Edit</a>';
+                break;
+            case 'delete':
+                str += ' <a class="[[+gridID]]Delete"  data-id="' + dataContext["id"] + '">Delete</a>';
+                break;
+            default:
+                str += ' <a class="[[+gridID]]'+columnDef.field+'" data-rowIndex="'+i+'" data-id="' + dataContext["id"] + '">'+columnDef.field+'</a>';
+        }
+        return str;
+    };
+    /* GRID */
+    // the ajax info:
+    var ajaxOptions = {
+        baseUrl: '[[+dataUrl]]',
+        urlParams: [{name: 'id', value: 2064}],
+        action: 'getCollection',
+        limit: 5000,
+        sortCol: 'last_name',
+        sortDir: 'ASC',
+    };
+  
+    var loader = new Slick.Data.JsonModel(ajaxOptions);
+
+    var columns = []; 
+    var completeColumns = [
+        [[+dataColumns]]
+    ];
+
+    
+    var options = {
+        editable: true,
+        enableAddRow: false,
+        enableCellNavigation: true,
+        asyncEditorLoading: false,
+        autoEdit: true,// Cell will not automatically go into edit mode when selected.
+        enableColumnReorder: true,
+        syncColumnCellResize: true
+        /*
+        rowHeight: 64,
+        enableRowReordering,
+        leaveSpaceForNewRows: true,
+        */
+    };
+    
+    var columnOrder = new Array();
+    
+    /**
+     * Load grid
+     */
+    var loadingIndicator = null;
+    
+    /**
+     * Locale Grid: 
+     */
+    $(function () {
+        
+        buildColumnOptions(completeColumns);
+        
+        //dataView = new Slick.Data.DataView({ inlineFilters: true });
+        grid = new Slick.Grid("#[[+gridID]]", loader.data/*dataView*/, columns, options);
+		
+        /*dataView.setPagingOptions({
+           pageSize: 25,
+        });*/
+
+        //grid.setSelectionModel(new Slick.CellSelectionModel());
+        //grid.setSelectionModel(new Slick.RowSelectionModel());
+        
+        //var pager = new Slick.Controls.Pager(dataView /*loader.data*/, grid, $("#pager"));
+        //var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+        
+        grid.onAddNewRow.subscribe(function (e, args) {
+            alert("AddNewRow");
+            var item = args.item;
+            grid.invalidateRow(data.length);
+            data.push(item);
+            grid.updateRowCount();
+            grid.render();
+        });
+        /**
+         * 
+         */
+        grid.onClick.subscribe(function (e, args) {
+            //alert("Call on cell: " );//+ args.cell + " Field: " + (grid.getColumns()[args.cell].field) );
+            //grid.getColumns()[cell.cell];
+            currentRow = args.row;
+            //console.log("onClick");
+            
+            if ( grid.getColumns()[args.cell].field == 'edit' ) {
+                //console.log("onClick2");
+                var i = grid.getDataItem(currentRow);//loader.data.getItem(args.row);
+				//var j = {};
+                //console.log("onClick3" + i);
+                /*
+				$.each(i, function(key,value) {    
+					//j = key + ":" + value;
+					// now populate the form
+					$("input[name*='"+ key + "']").val(value);
+					$("textarea[name*='"+ key + "']").val(value);
+				});
+				*/
+				var tmpData = {};
+                $.each(i, function(key,value) {    
+                    //console.log("N: " + key + " V: " + value);
+                    tmpData[key] = value;
+                });
+				//$('#[[+gridID]]EditForm').populate({"name":"Test Name", "description":"Test Description", "unknown":"unknown"});
+				
+                $('#[[+gridID]]EditForm').populate(tmpData);
+				//grid.getColumns()[args.cell].field;
+                //console.log("onClick4");
+                //console.log("I: "+ i['id'] +" N: "+ i['name'] +" Row: " + args.row + "Cell: " + args.cell + " Field: " + (grid.getColumns()[args.cell].field) );
+                
+                $('#[[+gridID]]EditFormDiv').dialog("open");
+            } else if ( grid.getColumns()[args.cell].field == 'delete' ) {
+                //console.log("onClick2");
+                var i = grid.getDataItem(currentRow);//loader.data.getItem(args.row);
+                
+                var tmpData = {};
+                $.each(i, function(key,value) {    
+                    //console.log("N: " + key + " V: " + value);
+                    tmpData[key] = value;
+                });
+                //$('#[[+gridID]]EditForm').populate({"name":"Test Name", "description":"Test Description", "unknown":"unknown"});
+                
+                $('#[[+gridID]]DeleteForm').populate(tmpData);
+                //grid.getColumns()[args.cell].field;
+                //console.log("onClick4");
+                //console.log("I: "+ i['id'] +" N: "+ i['name'] +" Row: " + args.row + "Cell: " + args.cell + " Field: " + (grid.getColumns()[args.cell].field) );
+                
+                $('#[[+gridID]]DeleteFormDiv').dialog("open");
+            }
+        });
+        /**
+         * 
+    slickgrid.onDblClick.subscribe(function(e){         
+        var cell = slickgrid.getCellFromEvent(e);
+        console.log(cell.row, cell.cell);
+    });
+    
+         */
+        /**
+         * class on when the cell has been changed and then it will need to be saved.
+         */
+        grid.onCellChange.subscribe(function (e, args) {
+            // alert("CellChanged");
+            $('#[[+gridID]]JsonMessage')
+                .html('Saving data')
+                .show();
+            // add saving to cell
+            //loader.data[args.row][grid.getColumns()[args.cell].field];
+            // save
+            var tmpF = (grid.getColumns()[args.cell].field);
+            $.post(
+                "[[+dataUrl]]", 
+                { 
+                    'action': "saveCell",
+                    'id': loader.data[args.row]['id'],
+                    'field': tmpF,
+                    'value': loader.data[args.row][grid.getColumns()[args.cell].field]
+                },
+                function(response){
+                    //alert("Status: " + response.status + " with a message of: " + response.message);
+                    // console.log("field response: " + response.data.field + " value: " + response.data.value);
+                    $('#[[+gridID]]JsonMessage')
+                        .html(response.message)
+                        .fadeOut(2500);
+                    
+                }, 
+                "jsonp"
+            );
+            // note that it has been saved
+            
+        });
+        
+        /**
+         * Calls on entry to edit cell:
+         */
+        grid.onActiveCellChanged.subscribe(function (e, args) {
+            // alert("ActiveCellChanged");
+        });
+        /**
+         * Load data
+         */
+        grid.onViewportChanged.subscribe(function (e, args) {
+            var vp = grid.getViewport();
+            loader.ensureData(vp.top, vp.bottom);
+        });
+
+        grid.onSort.subscribe(function (e, args) {
+            loader.setSort(args.sortCol.field, args.sortAsc ? 'ASC' : 'DESC');
+            var vp = grid.getViewport();
+            loader.ensureData(vp.top, vp.bottom);
+        });
+        /**
+         * Search input fields:
+         */
+        $("#[[+gridID]]Search input").change(function() {
+            var tmpStr = $(this).val();
+            var tmpField = $(this).attr("name");//data-field");
+            loader.setParam("search_"+tmpField, tmpStr);
+            var vp = grid.getViewport();
+            loader.reloadData(vp.top, vp.bottom);
+        });
+        // Search Selects:
+        $("#[[+gridID]]Search select").change(function() {
+            var tmpStr = $(this).val();
+            var tmpField = $(this).attr("name");//data-field");
+            loader.setParam("search_"+tmpField, tmpStr);
+            var vp = grid.getViewport();
+            loader.reloadData(vp.top, vp.bottom);
+        });
+        
+        loader.onDataLoading.subscribe(function () {
+            if (!loadingIndicator) {
+                loadingIndicator = $("<div class='loading-indicator'><p>Buffering...</p></div>").appendTo(document.body);
+                var $g = $("#[[+gridID]]");
+    
+                loadingIndicator
+                    .css("position", "absolute");
+                /*
+                    .css("top", $g.position().top + $g.height() / 2 - loadingIndicator.height() / 2)
+                    .css("left", $g.position().left + $g.width() / 2 - loadingIndicator.width() / 2);*/
+            }
+    
+            loadingIndicator.show();
+        });
+    
+        loader.onDataLoaded.subscribe(function (e, args) {
+            for (var i = args.from; i <= args.to; i++) {
+                grid.invalidateRow(i);
+            }
+    
+            grid.updateRowCount();
+            grid.render();
+            // call on the load: 
+            loadingIndicator.fadeOut();
+        });
+    
+        $("#txtSearch").keyup(function (e) {
+            if (e.which == 13) {
+                loader.setSearch($(this).val());
+                var vp = grid.getViewport();
+                loader.ensureData(vp.top, vp.bottom);
+            }
+        });
+    
+        // load the first page
+        grid.onViewportChanged.notify();
+        
+        // load selects and date editors for add/edit forms:
+        $('#[[+gridID]]Container').find('select').each(function() {
+            // data-editor=""
+            var dataEditor = $(this).attr("data-editor");
+            var tmpName = $(this).attr("name");
+            switch (dataEditor) {
+                case 'Slick.Editors.BasicSelect':
+                    var tmpArgs = {
+                        column: columns[grid.getColumnIndex(tmpName)], //tmpName, completeColumns[index].field
+                        container: $(this),
+                        existingID: $(this).attr("id")
+                        }
+                    //console.log("Column: " + tmpName + " - " + columns[grid.getColumnIndex(tmpName)]  );
+                    //console.log("Columns: " + completeColumns  );
+                    Slick.Editors.BasicSelect(tmpArgs);
+                    break;
+                case 'Slick.Editors.YesNoSelect':
+                    Slick.Editors.YesNoSelect();
+                    break;
+            }/*
+            $.each(this.attributes, function(i, attrib) {
+                if($.inArray("Slick.Editors.BasicSelect",attrib.value)){
+                    Slick.Editors.BasicSelect();
+                }
+                if($.inArray("Slick.Editors.YesNoSelect",attrib.value)){
+                    Slick.Editors.YesNoSelect();
+                }
+            });*/
+        });
+        $('#[[+gridID]]Container').find('input').each(function() {
+            $.each(this.attributes, function(i, attrib) {
+                if($.inArray("Slick.Editors.Date",attrib.value)){
+                    Slick.Editors.Date();
+                }
+            });
+        });
+        
+        
+    });
+    
+    
+    /**
+     * Build/Load the column hide/show options
+     */
+    function buildColumnOptions (myColumns) {
+        var columnForm = '';
+        var len = myColumns.length;
+        var count = 0;
+        for ( i=0; i < len; i++ ) {
+            var checked = ' checked="checked" ';
+            if(typeof myColumns[i].onLoadVisible != 'undefined' && ( !myColumns[i].onLoadVisible ||  myColumns[i].onLoadVisible == 'false')  ){
+                checked = '';
+            } else {
+                // build the visible columns:
+                columns[count++] = myColumns[i]; 
+            }
+            columnForm += 
+                '<li class="small spaceRight ">' +
+                    '<input type="checkbox" id="col_'+ myColumns[i].field + '" '+checked+' class="jsChangeColumns radio" value="'+ i +'"> '+
+                    '<label for="col_'+ myColumns[i].field + '">'+ myColumns[i].name + '</label>' +
+                '</li>';
+            columnOrder[i] = i;
+        }
+        //console.log(columnForm);
+        $('#[[+gridID]]ShowColumns form ul').html(columnForm);
+        // now attach 
+        $('#expandColumnForm').bind('click', function(){
+            $('#[[+gridID]]ShowColumns form').show();
+            $('#closeColumnForm').show();
+            $('#expandColumnForm').hide();
+        });
+        $('#closeColumnForm').bind('click', function(){
+            $('#[[+gridID]]ShowColumns form').hide();
+            $('#closeColumnForm').hide();
+            $('#expandColumnForm').show();
+        });
+        $('#[[+gridID]]ShowColumns form').hide();
+        $('#closeColumnForm').hide();
+        $("#[[+gridID]]closeColumnForm").click(function() {
+			$('#closeColumnForm').hide();
+			$('#expandColumnForm').show();
+			$('#[[+gridID]]ShowColumns form').hide();
+	   });    
+        // the Accept check box
+        $("#[[+gridID]]ShowColumns input.jsChangeColumns").change(function() {
+            if ( $(this).attr('checked') ) {
+                // add
+                var tmpAction = 'add';
+            } else {
+                // remove
+                var tmpAction = 'remove';
+            }
+            changeColumn($(this).attr('value'), tmpAction);
+        });
+    }
+    
+    /**
+     * Add/Remove Column
+     * /
+    var visibleColumns;
+    function showColumn(position){
+        var columns = grid.getColumns();
+        columns.push(completeColumns[position]);
+        grid.setColumns(columns);
+    }
+    /**
+     * Add/Remove
+     */
+    function changeColumn(position, action){
+        var newColumns = [];
+        
+        var count = 0;
+        $.each(columnOrder, function(columnNumber, colPosition) { 
+            if ( columnNumber == position ) {
+                if ( action == 'add' ) {
+                    columnOrder[position] = count;
+                } else {
+                    columnOrder[position] = -1*count;
+                    if ( count == 0 ) {
+                        columnOrder[position] = -1000;
+                    }
+                }
+            }
+            // console.log("count: " + count)
+            if ( columnOrder[count] >= 0 ) {
+                newColumns.push(completeColumns[count]);
+            }
+            count++;
+        });
+        /*
+        //console.log("O: " + object );
+        //console.log("Len: " + len);
+        for ( i=0; i < len; i++ ) {
+            if ( i == position ) {
+                continue;
+            }
+            newColumns.push(tmpColumns[i]);
+        }*/
+        grid.setColumns(newColumns);
+    }
+    function columnPostions(){
+        var myArray = new Array();
+        var len = object.length;
+        for ( i=0; i < len; i++ ) {
+            //console.log ("Name: " + object[i].name );
+            myArray[object[i].name] = object[i].value;
+        }
+        return myArray;
+    }
+    // CSV Export:
+    $(function() {
+        $("#[[+gridID]]Export").click(function() {
+            $("#[[+gridID]]").table2CSV({
+                url: '[[++site_url]][[++assets_url]]/components/radui/export/',
+                filename: 'csv-report',
+                title: 'CSV Report',
+                dataType: 'csv'
+            });
+        });
+        /**
+         * Refresh/Reload 
+         */
+        $("#[[+gridID]]Refresh").click(function() {
+            // grid.render();
+            var vp = grid.getViewport();
+            loader.reloadData(vp.top, vp.bottom);
+        });
+        
+        
+    });
+
+</script>
+<!-- Full Screen buttons -->
+<script type="text/javascript">
+$(function() {
+	$("#enable_full").click(function() {
+		$("#disable_full").show();
+		$("#enable_full").hide();
+		$("#[[+gridID]]Container").addClass("fullScreen");
+		$("#disable_full[title]").tooltip({
+			offset: [0, 48] 
+		});
+	});
+	$("#disable_full").click(function() {
+		$("#disable_full").hide();
+		$("#enable_full").show();
+		$("#[[+gridID]]Container").removeClass("fullScreen");
+	});
+});
+/**
+ * this should be a method on the grid object 
+ */
+function displayGridMessage(message) {
+    // console.log("Message: " + message);
+    $('#[[+gridID]]JsonMessage')
+        .html(message)
+        .fadeIn('fast')
+        .fadeOut(2500);
+}
+</script>
+
+<!-- Add/Edit Forms -->
+<script src="[[++assets_url]]/components/radui/js/jquery/jquery.form.js"></script>
+<script src="[[++assets_url]]/components/radui/js/h5validate/jquery.h5validate.js"></script>
+<script src="[[++assets_url]]/components/radui/js/jquery/populate/jquery.populate.js"></script>
+<script>
+$(document).ready(function () {
+    $('#[[+gridID]]AddForm').h5Validate();
+    var createDialog = $("#[[+gridID]]AddFormDiv");
+    createDialog.dialog({ 
+        resizable: true,
+        show: { effect: 'drop', direction: "up" },
+        title: "Create new item",
+        width: 500,
+        position: "center center",
+        autoOpen: false,
+        buttons: [
+            {
+                text: "Save",
+                click: function() {
+                    // the ajaxSubmit... 
+                    $('#[[+gridID]]AddForm').ajaxSubmit({
+                        target: '[[+gridID]]myResultsDiv',
+                        clearForm: true,// clear form on success
+                        dataType: 'json',
+                        type: 'POST',
+                        success: function(data, statusText, xhr, $form)  {
+                            // console.log("Status: " + data['status']);
+                            if ( data['status'] == 'success' ) {
+                                createDialog.dialog("close");
+                                $('#[[+gridID]]AddForm .message')
+                                    .html('')
+                                    .removeClass("visible");
+                                $('#[[+gridID]]AddForm').resetForm();
+                                displayGridMessage(data['message']);
+                            } else {
+                                // there was an error:
+                                $('#[[+gridID]]AddForm .message')
+                                    .html(data['message'])
+                                    // add class:
+                                    .addClass("visible");
+                                // console.log(data['message']);
+                            }
+                            
+                        },
+                        beforeSubmit: function(arr, $form, options) { 
+                            // form data array is an array of objects with name and value properties
+                            // [ { name: 'username', value: 'jresig' }, { name: 'password', value: 'secret' } ] 
+                            // return false to cancel submit                  
+                        }
+                    })
+                    // alert("JSON");
+                    
+                }
+            }, {
+                text: "Cancel",
+                click: function() { 
+                    $(this).dialog("close");
+                    $('#[[+gridID]]AddForm .message')
+                        .html('')
+                        .removeClass("visible");
+                    // Clear form
+                    $('#[[+gridID]]AddForm').resetForm();
+                }
+            }
+        ]
+    });
+    
+    $('#[[+gridID]]AddRecord').click(function() {
+        createDialog.dialog("open");
+    });
+    
+    $('#[[+gridID]]EditForm').h5Validate();
+    
+    $("#[[+gridID]]EditFormDiv").dialog({ 
+        resizable: true,
+        //show: "slide",
+        title: "Edit Title",
+        width: 500,
+        autoOpen: false,
+        buttons: [
+            {
+                text: "Save",
+                click: function() {
+                    // the ajaxSubmit... 
+                    $('#[[+gridID]]EditForm').ajaxSubmit({
+                        target: '[[+gridID]]myResultsDiv',
+                        clearForm: true,// clear form on success
+                        dataType: 'json',
+                        type: 'POST',
+                        success: function(data, statusText, xhr, $form)  {
+                            // console.log("Status: " + data['status']);
+                            if ( data['status'] == 'success' ) {
+                                // console.log("Close - " + data['status']);
+                                $('#[[+gridID]]EditForm .message')
+                                    .html('')
+                                    .removeClass("visible");
+                                $('#[[+gridID]]EditForm').clearForm();
+                                $("#[[+gridID]]EditFormDiv").dialog("close");
+                                displayGridMessage(data['message']);
+                                // @TODO find a way to add the data to the grid so not to re-render
+                                grid.render();
+                            } else {
+                                // there was an error:
+                                $('#[[+gridID]]EditForm .message')
+                                    .html(data['message'])
+                                    // add class:
+                                    .addClass("visible");
+                                // console.log(data['message']);
+                            }
+                            
+                        },
+                        beforeSubmit: function(arr, $form, options) { 
+                            // form data array is an array of objects with name and value properties
+                            // [ { name: 'username', value: 'jresig' }, { name: 'password', value: 'secret' } ] 
+                            // return false to cancel submit                  
+                        }
+                    })
+                    // alert("JSON");
+                    
+                }
+            }, {
+                text: "Cancel",
+                click: function() { 
+                    $(this).dialog("close"); 
+                    // clear the form: 
+                    $('#[[+gridID]]EditForm').clearForm();
+                }
+            }
+        ]
+    });
+    
+    $("#[[+gridID]]DeleteFormDiv").dialog({ 
+        resizable: true,
+        //show: "slide",
+        title: "Delete Title",
+        width: 500,
+        autoOpen: false,
+        buttons: [
+            {
+                text: "Yes Delete",
+                click: function() {
+                    // the ajaxSubmit... 
+                    $('#[[+gridID]]DeleteForm').ajaxSubmit({
+                        target: '[[+gridID]]myResultsDiv',
+                        clearForm: true,// clear form on success
+                        dataType: 'json',
+                        type: 'POST',
+                        success: function(data, statusText, xhr, $form)  {
+                            //console.log("Status: " + data['status']);
+                            if ( data['status'] == 'success' ) {
+                                //console.log("Close - " + data['status']);
+                                $('#[[+gridID]]DeleteForm .message')
+                                    .html('')
+                                    .removeClass("visible");
+                                $('#[[+gridID]]DeleteForm').clearForm();
+                                $("#[[+gridID]]DeleteFormDiv").dialog("close");
+                                displayGridMessage(data['message']);
+                                grid.invalidateRow(currentRow);
+                            } else {
+                                // there was an error:
+                                $('#[[+gridID]]DeleteForm .message')
+                                    .html(data['message'])
+                                    // add class:
+                                    .addClass("visible");
+                                // console.log(data['message']);
+                            }
+                            
+                        },
+                        beforeSubmit: function(arr, $form, options) { 
+                            // form data array is an array of objects with name and value properties
+                            // [ { name: 'username', value: 'jresig' }, { name: 'password', value: 'secret' } ] 
+                            // return false to cancel submit                  
+                        }
+                    })
+                    // alert("JSON");
+                    
+                }
+            }, {
+                text: "No, Cancel",
+                click: function() { 
+                    $(this).dialog("close"); 
+                    // clear the form: 
+                    $('#[[+gridID]]DeleteForm').clearForm();
+                }
+            }
+        ]
+    });
+    // export form
+    
+    // import form
+    
+    $('#[[+gridID]]Import').click(function() {
+        $("#[[+gridID]]ImportFormDiv").dialog("open");
+    });
+    $("#[[+gridID]]ImportFormDiv").dialog({ 
+        resizable: true,
+        //show: "slide",
+        title: "Import Data Title",
+        width: 500,
+        autoOpen: false,
+        buttons: [
+            {
+                text: "Upload & Import",
+                click: function() {
+                    // the ajaxSubmit... 
+                    $('#[[+gridID]]ImportForm').ajaxSubmit({
+                        target: '[[+gridID]]myResultsDiv',
+                        clearForm: true,// clear form on success
+                        dataType: 'json',
+                        type: 'POST',
+                        success: function(data, statusText, xhr, $form)  {
+                            //console.log("Status: " + data['status']);
+                            if ( data['status'] == 'success' ) {
+                                //console.log("Close - " + data['status']);
+                                $('#[[+gridID]]ImportForm .message')
+                                    .html('')
+                                    .removeClass("visible");
+                                
+                                displayGridMessage(data['message']);
+                                // @TODO find a way to add the data to the grid so not to re-render
+                                grid.render();
+                                
+                                $('#[[+gridID]]ImportForm').clearForm();
+                                $("#[[+gridID]]ImportFormDiv").dialog("close");
+                            } else {
+                                // there was an error:
+                                $('#[[+gridID]]ImportForm .message')
+                                    .html(data['message'])
+                                    // add class:
+                                    .addClass("visible");
+                                // console.log(data['message']);
+                            }
+                            
+                        },
+                        beforeSubmit: function(arr, $form, options) { 
+                            // form data array is an array of objects with name and value properties
+                            // [ { name: 'username', value: 'jresig' }, { name: 'password', value: 'secret' } ] 
+                            // return false to cancel submit                  
+                        }
+                    })
+                    // alert("JSON");
+                    
+                }
+            }, {
+                text: "Cancel",
+                click: function() { 
+                    $(this).dialog("close"); 
+                    // clear the form: 
+                    $('#[[+gridID]]ImportForm').clearForm();
+                }
+            }
+        ]
+    });
+    
+});
+
+</script>

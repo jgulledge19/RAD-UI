@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+
+    <head>
+        <meta charset="utf-8"/>
+        <title>[[+longtitle]]</title>
+        <base href="[[!++site_url]]" />
+        
+        <!--[if lt IE 9]>
+            <script src="[[++asset_url]]/componenets/radui/templates/js/html5shiv.js"></script>
+        <![endif]-->
+        <script type="text/javascript" src="[[++asset_url]]/components/radui/js/jquery/ui/js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript">
+        $(function () {
+            $(".showhide-account").click(function() {
+                $(".showhide-account").toggleClass("current");
+                $(".account-content").slideToggle("fast");
+                $(this).toggleClass("active");
+                return false;
+            });
+            $(".select").click(function() {
+                $(".current").addClass("select");
+                $(".current").removeClass("current");
+                $(this).addClass("current");
+                $(this).removeClass("select");
+            });
+        });
+        </script>
+        <link rel="stylesheet" media="all" href="[[++asset_url]]/components/radui/templates/css/frameless.css"/>
+        <link rel="stylesheet" media="all" href="[[++asset_url]]/components/radui/templates/css/screen.css"/>
+        <link rel="stylesheet" media="all" href="[[++asset_url]]/components/radui/templates/css/forms.css"/>
+        <meta name="viewport" content="width=device-width, maximum-scale=1, user-scalable=no"/>
+        [[*embed-css]]
+        [[*embed-js]]
+    </head>
+    
+    <body lang="en">
+      <div id="wrapper">
+          
+          
+    <div id="page-top-outer">
+        <div id="page-top">
+          
+        <div id="top-search">
+          <ul>
+<li><input type="text" value="Search" onblur="if (this.value=='') { this.value='Search'; }" onfocus="if (this.value=='Search') { this.value=''; }" class="top-search-inp" /></li>
+<li>
+          <input type="image" src="[[++asset_url]]/components/radui/templates/images/shared/top_search_btn.png"  />
+          </li>
+</ul>
+        </div>        
+        </div>
+        <div class="nav-outer-repeat">
+          
+            <div id="nav-right">
+              
+                <div class="nav-divider">&nbsp;</div>
+                <div class="showhide-account"><strong>My Account</strong></div>
+                <div class="nav-divider">&nbsp;</div>
+                
+                <a href="" id="logout"><strong>Logout</strong></a>
+                  
+                <!--  start account-content -->   
+                <div class="account-content">
+                    <div class="account-drop-inner">
+                        <a href="" id="acc-settings">Settings</a>
+                        <div class="acc-line">&nbsp;</div>
+                        <a href="" id="acc-details">Personal details </a>
+                        <div class="acc-line">&nbsp;</div>
+                        <a href="" id="acc-project">Project details</a>
+                        <div class="acc-line">&nbsp;</div>
+                        <a href="" id="acc-inbox">Inbox</a>
+                        <div class="acc-line">&nbsp;</div>
+                        <a href="" id="acc-stats">Statistics</a> 
+                  </div>
+              </div>
+          </div>
+          <div class="nav">
+              <ul>
+                [[!Wayfinder?
+                    &startId=`2094`
+                    &displayStart=`true`
+                    &fullLink=`true`
+                    &level=`2`
+                    &startItemTpl=`rad_startItemTpl`
+                    &outerTpl=`bc7wfOuterTpl`
+                    &parentRowHereTpl=`wf_parentRowHereTpl`
+                    &activeParentRowTpl=`wf_parentRowHereTpl`
+                    &parentRowTpl=`wf_parentRowTpl`
+                    &selfClass=`current`
+                            &rowClass=`select`
+                            &rowTpl=`rad_rowTpl`
+                    &lastClass=`end`
+                  ]]
+             </ul>
+                  
+              </div>
+          </div>
+    </div>
+          
+          
+          
+           <div id="sidebar">
+             [[$rad-ui-sidebar]]
+               </div>
+          <div id="content">
+          
+            <div id="page-heading">
+                <h1>[[*mainTitle]]</h1>
+            </div>
+              <!-- end page-heading -->
+          
+            <h2>[[*pagetitle]]</h2>
+               [[*content]]
+                      
+          </div>
+          <!--  end content -->
+          
+            <div id="footer">
+                <a href="http://joshua19media.com">RAD-UI</a> &ndash; runs on <a href="http://modx.com">MODX</a>
+            </div>
+        </div>
+        <!-- end wrapper -->
+    </body>
+    
+</html>

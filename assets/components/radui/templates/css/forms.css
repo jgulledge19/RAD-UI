@@ -1,0 +1,367 @@
+@charset "utf-8";
+/* CSS Document */
+    div#message{
+        background:#f9d397; /*#b1d9fa;*/
+        color:#000;
+        padding:15px;
+        border:#a2a2a2 solid 1px;
+        height:auto;
+    }
+    div#message ul.error_list{
+        color:#FF0000;
+        font-weight:bold;
+    }
+    /* NEW vcard */
+    div.vcard img{
+        padding: 5px;
+        float:left;
+        border: 1px solid #dadada;
+        margin: 20px 15px 10px 0;
+    }
+    div#content  div.vcard ul{
+        list-style:none;
+        float:left;
+        margin: 15px 0;
+        padding:0;
+        width: 300px;
+    }
+    div#content div.vcard ul li{
+        margin: 0;
+        padding: 12px 0 4px 87px;
+        border-bottom: 1px dashed #dadada;
+        line-height: 1.5em;
+    }
+    div#content ul li strong,
+    div.vcard .office_address {
+        display:block;
+        width: 85px;
+        margin-left:-85px;
+        float:left;
+        font-weight:bold;
+    }
+    div.vcard .country-name,
+    div.vcard .tz, 
+    div.vcard .tel span.type{
+        display:none;
+    }
+/****************************************
+    GENERAL Form Styles
+****************************************/
+    input.submit{
+        background:#e4e4e4;
+        color:#888;
+        border:double 3px #a2a2a2;
+        padding: 5px;
+        margin-left: 5px;
+        font-size: 16px;
+        text-align:center;
+    }
+    input.submit:hover{
+        background: #fff;
+        color:#000;
+    }
+    ul li label {
+        color:#555;
+    }
+    label{
+        display:inline;
+    }
+form.formColumn {
+    clear:both;
+    padding-top: 10px;
+}
+    input:focus, select:focus, textarea:focus {
+        background: #ffffcc;
+    }
+    fieldset{
+        border:none;
+        padding:0;
+        margin-bottom: 15px;
+        width:auto;
+    }
+    fieldset fieldset{
+        margin:5px;
+        width:auto;
+    }
+    legend{
+        color:#003366;
+        font-weight:bold;
+        font-size: .9em;
+        padding: 0;
+        margin: 5px 0;
+    }
+    optgroup{
+        color: #0000ff;
+    }
+    optgroup option{
+        margin-left: 20px;
+    }
+    option{
+        color: #000;
+        padding: 1px;
+        border-bottom: 1px dashed #d4d4d4;
+        width:auto;
+    }
+    option:hover{
+        border-bottom: 1px solid #ff0000;
+    }
+
+form.formColumn input,
+form.formColumn select{
+    width: 236px; 
+    background:#F7F6F6;
+    border: 1px solid #e4e4e4;
+    border-bottom:1px solid #a2a2a2;
+    color:#555;
+    padding:1px;
+}
+form.formColumn textarea{
+    width: 95%;
+    height: 60px;
+    background:#F7F6F6;
+    border: 1px solid #e4e4e4;
+    border-bottom:1px solid #a2a2a2;
+    color:#555;
+    padding:2px 5px;
+    margin: 0 auto;
+}
+form.formColumn input:hover, 
+form.formColumn input:focus,
+form.formColumn textarea:hover, 
+form.formColumn textarea:focus{
+    border:1px solid #D0DDFE;
+    background:#ffe;
+    color:#000;
+}
+
+form.formColumn ul, 
+form.formColumn ul li{
+    margin:0;
+    padding:0;
+    list-style:none;
+}
+    form.formColumn ul li{
+        margin:6px 2px 5px 0;
+    }
+    form.formColumn ul li{
+        width: 280px;
+    /*  height: 60px;*/
+        float:left;
+        padding:0;
+    }
+    form.formColumn ul li.autoWidth,
+    form.formColumn.wide ul li.autoWidth{
+        width: auto;
+    }
+    form.formColumn li p{
+        padding:2px 0;
+    }
+    form.formColumn input.radio, 
+    form.formColumn ul li input.radio{
+        width:auto;
+        display:inline;
+        border:none;
+        background:none;
+    }
+
+    ul.narrowList {
+        width: 245px;
+    }
+    .clear{
+        clear:both;
+    }
+    .displayBlock{
+        display:block;
+    }
+/****************************************
+    Styles for 430(428) px width form 
+****************************************/
+    form.formColumn ul li{
+        width: 282px;
+    }
+    form.formColumn ul li input,
+    form.formColumn ul li select,
+    form.formColumn ul li textarea,
+    form.formColumn li ul li.standard input,
+    form.formColumn li ul li.standard select,
+    form.formColumn li ul li.standard textarea{
+        width: 280px;
+    }
+    form.formColumn ul li.full{
+        width: 428px;
+    }
+    form.formColumn ul li.full input,
+    form.formColumn ul li.full select,
+    form.formColumn ul li.full textarea{
+        width: 426px;
+    }
+    form.formColumn ul li.medium,
+    form.formColumn ul li.medium li{
+        width: 136px;
+    }
+    form.formColumn ul li.medium input,
+    form.formColumn ul li.medium select,
+    form.formColumn ul li.medium textarea,
+    form.formColumn ul li input.medium,
+    form.formColumn ul li select.medium,
+    form.formColumn ul li textarea.medium{
+        width: 134px;
+    }
+    form.formColumn ul li.small{
+        width: 63px;
+    }
+    form.formColumn ul li.small input,
+    form.formColumn ul li.small select,
+    form.formColumn ul li.small textarea,
+    form.formColumn ul li input.small,
+    form.formColumn ul li select.small,
+    form.formColumn ul li textarea.small{
+        width: 61px;
+    }
+    form.formColumn ul li.full input.radio,
+    form.formColumn ul li.medium input.radio,
+    form.formColumn ul li.small input.radio{
+        width: auto;
+    }
+    form.formColumn ul.spaceLeft,
+    form.formColumn p.spaceLeft{
+        margin-left: 25px;
+    }
+    form.formColumn ul li.spaceRight{
+        margin-right: 10px;
+    }
+    form.formColumn ul li.spaceLeft{
+        margin-left: 10px;
+    }
+/****************************************
+    Styles for 630(626) px width, form class="wide"
+****************************************/
+    form.formColumn.wide ul li{
+        width: 414px;
+    }
+    form.formColumn.wide ul li input,
+    form.formColumn.wide ul li select,
+    form.formColumn.wide ul li textarea,
+    form.formColumn.wide li ul li.standard input,
+    form.formColumn.wide li ul li.standard select,
+    form.formColumn.wide li ul li.standard textarea{
+        width: 412px;
+    }
+    form.formColumn.wide ul li.full{
+        width: 626px;
+    }
+    form.formColumn.wide ul li.full input,
+    form.formColumn.wide ul li.full select,
+    form.formColumn.wide ul li.full textarea{
+        width: 624px;
+    }
+    form.formColumn.wide ul li.medium,
+    form.formColumn.wide ul li.medium li{
+        width: 202px;
+    }
+    form.formColumn.wide ul li.medium input,
+    form.formColumn.wide ul li.medium select,
+    form.formColumn.wide ul li.medium textarea,
+    form.formColumn.wide ul li input.medium,
+    form.formColumn.wide ul li select.medium,
+    form.formColumn.wide ul li textarea.medium{
+        width: 200px;
+    }
+    form.formColumn.wide ul li.small{
+        width: 96px;
+    }
+    form.formColumn.wide ul li.small input,
+    form.formColumn.wide ul li.small select,
+    form.formColumn.wide ul li.small textarea,
+    form.formColumn.wide ul li input.small,
+    form.formColumn.wide ul li select.small,
+    form.formColumn.wide ul li textarea.small{
+        width: 94px;
+    }
+    form.formColumn.wide ul li.full input.radio,
+    form.formColumn.wide ul li.medium input.radio,
+    form.formColumn.wide ul li.small input.radio,
+    form.formColumn.wide ul li input.radio{
+        width: auto;
+    }
+    form.formColumn .formError{
+        color: #ff0000;
+    }
+
+/* BUTTONS from: http://particletree.com/features/rediscovering-the-button-element/ */
+.buttons a, .buttons button{
+    display:block;
+    float:left;
+    margin:0 7px 0 0;
+    background-color:#f5f5f5;
+    border:1px solid #dedede;
+    border-top:1px solid #eee;
+    border-left:1px solid #eee;
+    font-family:"Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+    font-size:100%;
+    line-height:130%;
+    text-decoration:none;
+    font-weight:bold;
+    color:#565656;
+    cursor:pointer;
+    padding:5px 10px 6px 7px; /* Links */
+}
+.buttons button{
+    width:auto;
+    overflow:visible;
+    padding:4px 10px 3px 7px; /* IE6 */
+}
+.buttons button[type]{
+    padding:5px 10px 5px 7px; /* Firefox */
+    line-height:17px; /* Safari */
+}
+*:first-child+html button[type]{
+    padding:4px 10px 3px 7px; /* IE7 */
+}
+.buttons button img, .buttons a img{
+    margin:0 3px -3px 0 !important;
+    padding:0;
+    border:none;
+    width:16px;
+    height:16px;
+}
+/* STANDARD */
+button:hover, .buttons a:hover{
+    background-color:#dff4ff;
+    border:1px solid #c2e1ef;
+    color:#336699;
+}
+.buttons a:active{
+    background-color:#6299c5;
+    border:1px solid #6299c5;
+    color:#fff;
+}
+/* POSITIVE */
+
+button.positive, .buttons a.positive{
+    color:#529214;
+}
+.buttons a.positive:hover, button.positive:hover{
+    background-color:#E6EFC2;
+    border:1px solid #C6D880;
+    color:#529214;
+}
+.buttons a.positive:active{
+    background-color:#529214;
+    border:1px solid #529214;
+    color:#fff;
+}
+/* NEGATIVE */
+.buttons a.negative, button.negative{
+    color:#d12f19;
+}
+.buttons a.negative:hover, button.negative:hover{
+    background:#fbe3e4;
+    border:1px solid #fbc2c4;
+    color:#d12f19;
+}
+.buttons a.negative:active{
+    background-color:#d12f19;
+    border:1px solid #d12f19;
+    color:#fff;
+}

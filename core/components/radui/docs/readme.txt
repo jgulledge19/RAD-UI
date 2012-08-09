@@ -43,3 +43,12 @@ RAD-UI uses:
 
 MODX Snippet Parameters Suggestion: 
     http://virtudraft.com/blog/unexceptional-5-parameters-that-all-modxs-snippets-should-have.html
+    
+4 snippets
+    RadUiCharts
+    RadUiGrid
+    RadUiJson
+    RadUiTabs
+Future Snippet
+    RadUiBuilder - GUI to build a config JSON for RadUiGrid and RadUiCharts.  Along with a xpod schema  
+    

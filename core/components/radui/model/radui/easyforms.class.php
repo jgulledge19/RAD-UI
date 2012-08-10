@@ -26,8 +26,9 @@ class EasyForms {
      *                       
      *                  // form fields: 
      *                      'label' => ''
-     *                      'element' => '' - input, textarea, select, html
-     *                      'type' => '' input -> button, text, checkbox, file, radio, hidden, password, reset, submit, image, ect.. (combobox, autosuggest, )
+     *                      'element' => '' - input, textarea, select, radio, checkbox, hidden (these have corrasponding Chunks )
+     *                      'type' => '' input -> button, text, file, reset, submit,password,
+     *                                     checkbox, radio, hidden, image, ect.. (combobox, autosuggest, )
      *                      'require' => '' HTML5 attribute
      *                      'labelClass' => '' userINput
      *                      
@@ -54,29 +55,75 @@ class EasyForms {
      * removed elements
      */
     protected $remove_elements = array();
-    
-    
-    
+    /**
+     * the form data config
+     *  array( 
+     *     action=> the uri/url to process the form,
+     *     method=> { get | post },
+     *     id=>'',
+     *     enctype=> { application/x-www-form-urlencoded | multipart/form-data | text/plain } 
+     *     
+     *     name=>'',
+     *     accept-charset=>''
+     *     attr=> any other attributes you want to add as property="value"
+     *     )
+     */
+    protected $config = array();
     
     /**
-     * 
+     * Theme - this is the theme or set of Chunks the will be used to build the form
      */
-    protected $ordered_elements = array();
+    protected $theme;
     
     /**
-     * temp child array
+     * default form data
+     * @param (array) $default_data
      */
-    protected $tmp_children = array();
+    protected $default_data = array();
     
-	function __construct($argument) {
-		
+    /**
+     * the modx object
+     */
+    public $modx;
+    
+    /**
+     * @param $modx
+     * @param (array) $config - the for
+     * @param (string) $theme - the theme for the form elements
+     */
+    function __construct(modX &$modx,array $config = array(), $theme='radui') {
+        $this->modx =& $modx;
+        $this->config = $config;
+		$this->theme = $theme;
 	}
     
     /**
-     * Create a new form
+     * Set form data
+     * @param (string) $attribute
+     * @param (string) $value
+     * @return void 
      */
-    public function newForm($config, $theme='') {
-        // need all form stuff plus theme value
+    public function setForm($attribute, $value) {
+        $this->config[$attribute] = $value;
+    }
+    
+    /**
+     * load default form values
+     * @param (array) $data in a name=>value
+     * @return void 
+     */
+    public function loadData($data) {
+        $this->default_data = $data;
+    }
+    /**
+     * Set value of a single form element
+     * @param (string) $name - the name of the form field
+     * @param (mixed) $value - the value you wish to set the field to 
+     *               can be an array for a group of checkboxes like chkbox[]
+     * @return void 
+     */
+    public function setFormValue($name, $value) {
+        $this->default_data[$name] = $value;
     }
     
     /**
@@ -107,7 +154,7 @@ class EasyForms {
         
         return $this->addElement($id, $config);
     }
-    
+    // @TODO need addTabs then you can add a tab to it
     /**
      * Add a tab 
      * @param (string) $tabTitle - the title of the tab
@@ -122,7 +169,6 @@ class EasyForms {
         
         return $this->addElement($id, $config);
     }
-    
     /**
      * Add form field - input, textarea, select, ect..
      * @param (string) $tabTitle - the title of the tab
@@ -134,7 +180,7 @@ class EasyForms {
         // elementType;
         $config['elementType'] = 'field';
         $config['name'] = $fieldName;
-        // set some defaults:
+        // set some defaults: element
         
         return $this->addElement($id, $config);
     }
@@ -283,36 +329,92 @@ class EasyForms {
     /**
      * Render the elements using recursion
      * @param (array) $parents
-     * @return (string) $processChunkArray
+     * @return (array) $children
      */
     protected function renderElement($parents) {
-        $html = array();
+        $children = array();
         
         foreach ( $parents as $parent ) {
             if ( isset($this->remove_elements[$parent])) {
                 continue;
             }
             $children_html = array();
-            $placeholders = array();
+            $properties = array();
+            $properties = $this->elements[$parent];// this is the current elements data
             if ( isset($this->associated[$parent]) ) {
                 // get the children
                 $children_html = $this->renderElement($this->associated[$parent]);
+                $properties = array_merge($children_html, $properties);
+            }
+             
+            $send_to = 'childElement';
+            
+            if ( isset($this->elements[$parent]['location']) ) {
+                $send_to = $this->elements[$parent]['location'];
+            }
+            if ( !isset($children[$send_to]) ) {
+                $children[$send_to] = '';
             }
             
-            if ( isset($children_html['pre']) ) {
-                $placeholders['pre'] = $children_html['pre'];
-            }
-            if ( isset($children_html['post']) ) {
-                $placeholders['post'] = $children_html['post'];
+            
+            /**
+             * elementType:
+             *  fieldset
+             *  container
+             *  tab
+             *  field -> many chunks - element types
+             *  html -> no chunk straight HTML
+             *  button
+             */
+            $html = '';
+            if ( $this->elements[$parent]['elementType'] == 'html' ) {
+                $html = $this->elements[$parent]['html'];
+            } else {
+                if ( isset($this->elements[$parent]['chunk']) ) {
+                    $chunk = $this->elements[$parent]['chunk'];
+                } else {
+                    if ( $this->elements[$parent]['elementType'] == 'field' ) {
+                        $chunk = $this->theme.$this->elements[$parent]['element'];
+                        // if select then build the option/option groups:
+                        if ( $this->elements[$parent]['element'] == 'select' ) {
+                            $options = $this->elements[$parent]['options'];
+                            $option_str = '';
+                            foreach ($options as $name => $value) {
+                                // optgroup
+                                if ( is_array($value) ) {
+                                    $option_str .= '<optgroup label="'.$name.'">';
+                                    foreach ( $value as $n => $v ) {
+                                        $option_str .= '<option value="'.$v.'">'.$n.'</option>';
+                                    }
+                                    $option_str .= '</optgroup>';
+                                } else {
+                                    // regular option
+                                    // selected="selected"
+                                    $option_str .= '<option value="'.$value.'">'.$name.'</option>';
+                                }
+                                
+                            }
+                        } else if ( $this->elements[$parent]['element'] == 'radio' || $this->elements[$parent]['element'] == 'checkbox' ) {
+                            //
+                            if ( isset($this->elements[$parent]['value'])  && $this->default_data[$this->elements[$parent]['name']] == $this->elements[$parent]['value'] ) {
+                                if ( !isset($this->elements[$parent]['attr']) ) {
+                                    $this->elements[$parent]['attr'];
+                                }
+                                $this->elements[$parent]['attr'] .= ' checked="checked" ';
+                            }
+                            //@TODO checkbox groups:
+                        }
+                    } else {
+                        $chunk = $this->theme.$this->elements[$parent]['elementType'];
+                    }
+                }
+                $properties['elementID'] = $parent;
+                $html = $this->modx->getChunk($chunk, $properties);
             }
             
-            $placeholders = array(
-                'prehtml' => '',
-                'posthtml' => '',
-            );
-            $this->modx->getChunk();
+            $children[$send_to] .= $html;
         }
-        return $html;
+        return $children;
     }
     
     

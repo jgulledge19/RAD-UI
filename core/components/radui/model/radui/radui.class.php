@@ -15,6 +15,10 @@ class RadUi {
      */
     public $grid;
     /**
+     * @param (Object) $form - form EasyForms
+     */
+    public $form;
+    /**
      * @param (Object) $tabs
      */
     public $tabs;
@@ -164,5 +168,24 @@ class RadUi {
             $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI] Could not load the '.$chartName.' class.');
         }
         return false;
+    }
+    
+    /**
+     * @param (Array) $scriptProperties
+     * @param (String) $theme
+     * @return (Object) $form
+     */
+    public function newForm($scriptProperties,$theme='radui') {
+        $formsName = $this->modx->getOption('forms', $scriptProperties, 'EasyForms');
+        
+        if ($this->modx->loadClass($formsName,MODX_CORE_PATH.'/components/radui/model/radui/',true,true)) {
+            $this->form = new $formsName($this->modx, $scriptProperties, $theme);
+            
+        } else {
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI] Could not load the '.$formsName.' class.');
+            return false;
+        }
+        
+        return $this->form;
     }
 }

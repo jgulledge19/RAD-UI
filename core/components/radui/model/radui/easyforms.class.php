@@ -26,16 +26,16 @@ class EasyForms {
      *                       
      *                  // form fields: 
      *                      'label' => ''
-     *                      'element' => '' - input, textarea, select, radio, checkbox, hidden (these have corrasponding Chunks )
+     *                      'element' => '' - button, checkbox, hidden, input, radio, select, textarea (these have corrasponding Chunks )
      *                      'type' => '' input -> button, text, file, reset, submit,password,
      *                                     checkbox, radio, hidden, image, ect.. (combobox, autosuggest, )
      *                      'require' => '' HTML5 attribute
      *                      'labelClass' => '' userINput
      *                      
-     *                      'preElement' =>
-     *                      'postElement' =>
+     *                      'startElement' =>
      *                      'midElement' => 
      *                      'childElement' =>
+     *                      'endElement' =>
      *                      
      *                 // for all but only for plugins 
      *                      'sequence' => (int) the order in which the form element will appear
@@ -51,6 +51,10 @@ class EasyForms {
      * the associated list
      */
     protected $associated = array();
+    /**
+     * pad the HTML with spaces 
+     */
+    protected $pad_lines = true;
     /**
      * removed elements
      */
@@ -171,7 +175,7 @@ class EasyForms {
     }
     /**
      * Add form field - input, textarea, select, ect..
-     * @param (string) $tabTitle - the title of the tab
+     * @param (string) $fieldName - the name of the form element
      * @param (string) $id - the value for the HTML id attribute 
      * @param (array) $config
      * @return (string) $id - the value for the HTML id attribute
@@ -202,11 +206,39 @@ class EasyForms {
     }
     
     /**
-     * add button
+     * Add Submit input field 
+     * @param (string) $fieldName - the name of the form element
+     * @param (string) $id - the value for the HTML id attribute 
+     * @param (array) $config
+     * @return (string) $id - the value for the HTML id attribute
      */
-    public function addButton($value='') {
-        
+    public function addSubmit($fieldName, $id, $config=array()) {
+        // elementType;
+        $config['elementType'] = 'submit';
+        $config['name'] = $fieldName;
+        // set some defaults: element
+        if ( !isset($config['value']) ) {
+            $config['value'] = $fieldName;
+        }
+        return $this->addElement($id, $config);
     }
+    /**
+     * Add Button 
+     * @param (string) $fieldName - the name of the form element
+     * @param (string) $id - the value for the HTML id attribute 
+     * @param (array) $config
+     * @return (string) $id - the value for the HTML id attribute
+     */
+    public function addButton($fieldName, $id, $config=array()) {    // elementType;
+        $config['elementType'] = 'button';
+        $config['name'] = $fieldName;
+        // set some defaults: element
+        if ( !isset($config['value']) ) {
+            $config['value'] = $fieldName;
+        }
+        return $this->addElement($id, $config);
+    }
+    
     // addChunk:
     // addSnippet?
     
@@ -309,7 +341,17 @@ class EasyForms {
     public function render($loadJS=TRUE, $loadCSS=TRUE, $loadJQuery=TRUE) {
         // loop through the associated method:
         
-        return $this->renderElement($this->associated[0]);// start with the heighest level
+        $form_parts = $this->renderElement($this->associated[0]);// start with the heighest level
+        $properties = array_merge($this->config,$form_parts);
+        
+        if ( isset($properties['chunk']) ) {
+            $chunk = $properties['chunk'];
+        } else {
+            $chunk = $this->theme.'form';
+        }
+        $html = $this->modx->getChunk($chunk, $properties);
+        
+        return $html;
         
         $elements = array();
         
@@ -329,9 +371,10 @@ class EasyForms {
     /**
      * Render the elements using recursion
      * @param (array) $parents
+     * @param (Sting) $spacing - the spaces to add to lines to create a well formed HTML
      * @return (array) $children
      */
-    protected function renderElement($parents) {
+    protected function renderElement($parents, $spacing='  ') {
         $children = array();
         
         foreach ( $parents as $parent ) {
@@ -343,7 +386,7 @@ class EasyForms {
             $properties = $this->elements[$parent];// this is the current elements data
             if ( isset($this->associated[$parent]) ) {
                 // get the children
-                $children_html = $this->renderElement($this->associated[$parent]);
+                $children_html = $this->renderElement($this->associated[$parent], $spacing.'  ');
                 $properties = array_merge($children_html, $properties);
             }
              
@@ -366,59 +409,135 @@ class EasyForms {
              *  html -> no chunk straight HTML
              *  button
              */
-            $html = '';
-            if ( $this->elements[$parent]['elementType'] == 'html' ) {
-                $html = $this->elements[$parent]['html'];
-            } else {
-                if ( isset($this->elements[$parent]['chunk']) ) {
-                    $chunk = $this->elements[$parent]['chunk'];
-                } else {
-                    if ( $this->elements[$parent]['elementType'] == 'field' ) {
-                        $chunk = $this->theme.$this->elements[$parent]['element'];
-                        // if select then build the option/option groups:
-                        if ( $this->elements[$parent]['element'] == 'select' ) {
-                            $options = $this->elements[$parent]['options'];
-                            $option_str = '';
-                            foreach ($options as $name => $value) {
-                                // optgroup
-                                if ( is_array($value) ) {
-                                    $option_str .= '<optgroup label="'.$name.'">';
-                                    foreach ( $value as $n => $v ) {
-                                        $option_str .= '<option value="'.$v.'">'.$n.'</option>';
-                                    }
-                                    $option_str .= '</optgroup>';
-                                } else {
-                                    // regular option
-                                    // selected="selected"
-                                    $option_str .= '<option value="'.$value.'">'.$name.'</option>';
-                                }
-                                
+            // set defaults and process data:
+            if ( !isset($properties['label']) && isset($properties['name']) ) {
+                $properties['label'] = $properties['name']; 
+            }
+            // set options for selects
+            if ( isset($properties['options']) && is_array($properties['options']) ) {
+                $options = $properties['options'];
+                $option_str = '';
+                $selected_value = '';
+                if ( isset($this->default_data[$properties['name']]) ) {
+                    $selected_value = $this->default_data[$properties['name']];
+                } else if ( isset($properties['value']) ) {
+                    $selected_value = $properties['value'];
+                }
+                    
+                foreach ($options as $name => $value) {
+                    $selected = '';
+                    // optgroup
+                    if ( is_array($value) ) {
+                        $option_str .= '<optgroup label="'.$name.'">';
+                        foreach ( $value as $n => $v ) {
+                            if ( $v == $selected_value ) {
+                                $selected = 'selected="selected"';
                             }
-                        } else if ( $this->elements[$parent]['element'] == 'radio' || $this->elements[$parent]['element'] == 'checkbox' ) {
-                            //
-                            if ( isset($this->elements[$parent]['value'])  && $this->default_data[$this->elements[$parent]['name']] == $this->elements[$parent]['value'] ) {
-                                if ( !isset($this->elements[$parent]['attr']) ) {
-                                    $this->elements[$parent]['attr'];
-                                }
-                                $this->elements[$parent]['attr'] .= ' checked="checked" ';
-                            }
-                            //@TODO checkbox groups:
+                            $option_str .= '<option value="'.$v.'" '.$selected.'>'.$n.'</option>';
                         }
+                        $option_str .= '</optgroup>';
                     } else {
-                        $chunk = $this->theme.$this->elements[$parent]['elementType'];
+                        // regular option
+                        if ( $value == $selected_value ) {
+                            $selected = 'selected="selected"';
+                        }
+                        $option_str .= '<option value="'.$value.'" '.$selected.'>'.$name.'</option>';
+                    }
+                }
+                $properties['selectOptions'] = $option_str;
+            }
+            // set checked for radios/checkboxes
+            if ( isset($properties['value']) && isset($this->default_data[$properties['name']]) &&
+                    $this->default_data[$properties['name']] == $properties['value'] ) {
+                $properties['checked'] = 'checked="checked"';
+            } else {
+                $properties['checked'] = '';
+            }
+            //@TODO checkbox groups:
+            
+            // set basic properties to empty/null - this to to reduce processing and pushed down placeholders
+            $empty_data = array(
+                     'elementType' => '',
+                     'parent' => '',
+                     // 'location' => childElement(default), startElement, endElement, or midElement
+                     'class' => '',
+                     'attr' => '',
+                     'name' => '',
+                     'title' => '',
+                     'id' => '',
+                     'label' => '',
+                     'element' => '',
+                     'type' => '',
+                     'require' => '',
+                     'labelClass' => '',
+                     'startElement' => '',
+                     'midElement' => '',
+                     'childElement' => '',
+                     'endElement' => '',
+                     // for all but only for plugins
+                     'sequence' => '',
+                     'placeAfter' => '',
+                     'placeBefore' => '',
+                );
+            $properties = array_merge($empty_data, $properties);
+            $html = '';
+            if ( $properties['elementType'] == 'html' ) {
+                $chunk = $this->modx->newObject('modChunk');
+                $chunk->setContent($properties['html']);
+                $html = $chunk->process($properties);
+            } else {
+                if ( isset($properties['chunk']) ) {
+                    $chunk = $properties['chunk'];
+                } else {
+                    if ( $properties['elementType'] == 'field' ) {
+                        // default types
+                        $chunk = $this->theme.$properties['element'];
+                    } else {
+                        $chunk = $this->theme.$properties['elementType'];
                     }
                 }
                 $properties['elementID'] = $parent;
                 $html = $this->modx->getChunk($chunk, $properties);
             }
-            
+            // now add spacing to the lines:
+            if ( $this->pad_lines ) {
+                $html = $this->lineSpacing($html, $spacing);
+            }
             $children[$send_to] .= $html;
         }
         return $children;
     }
     
     
-    
+    /**
+     * Utility Function - add spacing to lines to create well formed HTML
+     * ex:
+     * <ul>
+     *     <li></li>
+     * </ul>
+     */
+    protected function lineSpacing($string, $spaces) {
+        // \r\n, \n\r, \n and \r
+        $padded_string = '';
+        $string = str_replace(array("\\r\\n", "\\n\\r", "\\n", "\\r"), "\\r\\n", $string);
+        $lines = explode("\r\n", $string);
+        foreach( $lines as $line ) {
+            // remove empty lines:
+            $tmp = trim($line);
+            if ( $tmp == '' ) {
+                continue;
+            }
+            $padded_string .= $spaces.$line."\r\n";
+            //$padded_string .= '|'.$spaces.'|'.$line."\r\n";
+        }
+        /**
+         * this method seems very slow:
+        $fp = fopen('data:text/plain,'. $string,'rb');
+        while ( ($line = fgets($fp)) !== false) {
+          $padded_string .= $spaces.$line."\r\n";
+        }*/
+        return $padded_string;
+    }
     
     
     

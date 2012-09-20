@@ -3,7 +3,7 @@
  * @module Editors
  * @namespace Slick
  */
-
+var JSONCache = [];
 (function ($) {
   // register namespace
   $.extend(true, window, {
@@ -241,14 +241,58 @@
         this.init = function() {
             option_str = '';
 			if(typeof args != "undefined"){
-                if ( jQuery.isPlainObject(args.column.selectOptions) &&  jQuery.isArray(args.column.selectOptions.array)) {
-                    //console.log("Object");
+			    if ( typeof args.column != "undefined" && jQuery.isPlainObject(args.column.selectOptions) && args.column.selectType == 'JSON') {
+			        var JSON_data = '';
+			        // console.log("JSON attempt: " + args.column.selectOptions.url);
+			        // selectoptions = {"value": "value", "display": "Display", "url": "URL?n=v"}
+			        if ( typeof JSONCache[args.column.selectOptions.url] != "undefined" ) {
+			             JSON_data = JSONCache[args.column.selectOptions.url];
+			        } else {
+			            /*
+			            $.getJSON(args.column.selectOptions.url, function(data) {
+                            console.log("Data: " + data); //uncomment this for debug
+                            //alert (data.item1+" "+data.item2+" "+data.item3); //further debug
+                            JSON_data = data.data;
+                            console.log("JSON_Data: " + data.data); //uncomment this for debug
+                            JSONCache[args.column.selectOptions.url] = JSON_data;
+                        }); */
+                        $.ajax({
+                             type: "GET",
+                             url: args.column.selectOptions.url,
+                             async: false,
+                             /*beforeSend: function(x) {
+                                  if(x && x.overrideMimeType) {
+                                   x.overrideMimeType("application/j-son;charset=UTF-8");
+                                  }
+                             },*/
+                             dataType: "json",
+                             success: function(data){
+                                //do your stuff with the JSON data
+                                //console.log("Data: " + data); //uncomment this for debug
+                                //alert (data.item1+" "+data.item2+" "+data.item3); //further debug
+                                JSON_data = data.data;
+                                //console.log("JSON_Data: " + data.data); //uncomment this for debug
+                                JSONCache[args.column.selectOptions.url] = JSON_data;
+                             }
+                        });
+                        
+                        
+			        }
+			        var len = JSON_data.length;
+			        var v = args.column.selectOptions.value;
+			        var n = args.column.selectOptions.display;
+			        //console.log("JSON SELECT V: " + v + " -- " + n + " -- L: " + len + " ID: "+ JSON_data[1].id + " Display: " +JSON_data[i][n] );
+                    for ( i=0; i < len; i++ ) {
+                        option_str += '<option value="'+JSON_data[i][v]+'">'+JSON_data[i][n] +"</option>";
+                    }
+                } else if ( typeof args.column != "undefined" && jQuery.isPlainObject(args.column.selectOptions) &&  jQuery.isArray(args.column.selectOptions.array)) {
+                    //console.log("Object attempt: " + args.column.selectType );
                     var len = args.column.selectOptions.array.length;
                     for ( i=0; i < len; i++ ) {
                         option_str += '<option value="'+args.column.selectOptions.array[i].v+'">'+args.column.selectOptions.array[i].n+"</option>";
                     }
-                } else if ( jQuery.isArray(args.column.selectOptions) ) {
-                    //console.log("Array");
+                } else if ( typeof args.column != "undefined" &&  jQuery.isArray(args.column.selectOptions) ) {
+                    //console.log("Array attempt");
                     // for (var key in object) {    print(object[key]);}
                     //var myArray = new Array();
                     //for each( args.column.selectOptions as key => value) {
@@ -257,7 +301,7 @@
                         option_str += '<option value="'+key+'">'+args.column.selectOptions[key]+"</option>";
                     }
                 } else {
-                    if ( args.column.selectOptions){
+                    if ( typeof args.column != "undefined" &&  args.column.selectOptions){
                         //console.log("String");
                         opt_values = args.column.selectOptions.split(',');
                     } else{

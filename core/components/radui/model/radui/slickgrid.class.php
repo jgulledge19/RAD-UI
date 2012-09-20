@@ -211,6 +211,10 @@ class SlickGrid extends DataGrid {
                 $columnCount++;
                 $json .= '{';
                 $c = 0;
+                if ( !isset($row->id) && isset($row->field) ) {
+                    $row->id = $row->field;
+                    // need a default ID for the JS Select functions
+                }
                 foreach( $row as $name=>$value ) {
                     if ( $this->debug ) {
                         $json .= "\r\n        ";// 8 spaces
@@ -223,7 +227,9 @@ class SlickGrid extends DataGrid {
                     // format the value correctly:
                     if ( is_object($value) || is_array($value) ) {
                         // build the select options:
-                        if ( $name == 'selectOptions' ) {
+                        if ( $name == 'selectOptions' && !isset($row->selectType) || 
+                            ( $name == 'selectOptions' && isset($row->selectType) && $row->selectType != 'JSON' ) 
+                        ) {
                             // {array:[ {n: Name, v: value}, {n: Name2, v: value2 }  ]}
                             // {Name:value, name2:value2,...}
                             $json .= '{array:[ ';
@@ -384,7 +390,12 @@ class SlickGrid extends DataGrid {
         $type = $jsclass = '';
         $isRequired = (isset($data->require) && ( $data->require || $data->require == 'true') ? TRUE : FALSE);
         $element = '';
-        $holderCss = ( isset($data->holderCSSClass) ? $data->holderCSSClass : '');
+        $holderName = $formType.'holderCSSClass';
+        if ( isset($data->$holderName ) ) {
+            $holderCss = $data->$holderName;
+        } else {
+            $holderCss = ( isset($data->holderCSSClass) ? $data->holderCSSClass : '');
+        }
         $cssClass = ( isset($data->CSSClass) ? $data->CSSClass : '');
         switch ($data->editor) {
             // text area

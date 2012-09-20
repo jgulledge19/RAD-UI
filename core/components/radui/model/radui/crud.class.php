@@ -93,6 +93,8 @@ class Crud {
         
         $c = $this->searchList($c);
         
+        $c = $this->excludeList($c);
+        
         $c = $this->sortList($c);
         
         $totalRecords = $this->modx->getCount($this->classKey,$c);
@@ -108,6 +110,7 @@ class Crud {
         /* iterate through subscribers */
         $data = array();
         if ($count > 0) {
+            $item_count = 1;
             foreach ($items as $item) {
                 $item = $item->toArray();
                 if ( $this->canUpdate() ) {
@@ -116,6 +119,7 @@ class Crud {
                 if ( $this->canDelete() ) {
                     $item['deleteLink'] = 'Delete';
                 }
+                $item['item_kount'] = $item_count++;
                 // what about custom filters?
                 $data[] = $item;
             }
@@ -417,6 +421,28 @@ class Crud {
         if ( count($search) > 0 ) {
             // @TODO verify that they are valid column fields - see: xPDOManager::getColumnDef()
             $query->where($search);
+        }
+         
+        return $query;
+    }
+    /**
+     * set a custom search exclude option, can set these basied on user/group
+     * @param (object) $query
+     * @return (Object) $query
+     */
+    protected function excludeList($query) {
+        // default search
+        // search fields: (must be prefixed with search_ )
+        $exclude = array();
+        foreach ( $_REQUEST as $name => $value ) {
+            if ( strpos($name,'exclude_') === 0 && !empty($value) ) {
+                // 'start_date:LIKE' => $start_where.'%'
+                $exclude[str_replace('exclude_', '', $name).':NOT LIKE'] = $value.'%';
+            }
+        }
+        if ( count($exclude) > 0 ) {
+            // @TODO verify that they are valid column fields - see: xPDOManager::getColumnDef()
+            $query->where($exclude);
         }
          
         return $query;

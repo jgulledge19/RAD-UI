@@ -37,7 +37,7 @@ $(function() {
 	$("#closeColumnForm[title]").tooltip();
 });
 </script>
-<script type="text/javascript" language="JavaScript">
+<script type="text/javascript">
     
     var currentRow = null;
     
@@ -88,6 +88,17 @@ $(function() {
                 str += ' <a class="[[+gridID]]'+columnDef.field+'" data-rowIndex="'+i+'" data-id="' + dataContext["id"] + '">'+columnDef.field+'</a>';
         }
         return str;
+    };
+    /**
+     * Format the date 
+     */
+    var mysqlDateFormatter = function (row, cell, value, columnDef, dataContext) {
+        // 2012-09-14 13:54:06
+        var tDate = value.split(" ");
+        var tDates = tDate[0].split("-");
+        // console.log(tDates[1]*1 + "/" + tDates[2]*1 + "/" + tDates[0]);
+        return (tDates[1]*1 + "/" + tDates[2]*1 + "/" + tDates[0]);
+        // columnDef.field
     };
     /* GRID */
     // the ajax info:
@@ -328,6 +339,13 @@ $(function() {
     
         // load the first page
         grid.onViewportChanged.notify();
+        // load the completeColumnMap:
+        grid.completeColumnsById = {};
+        for (var i = 0; i < completeColumns.length; i++) {
+            var m = completeColumns[i] = $.extend({}, grid.columnDefaults, completeColumns[i]);
+            grid.completeColumnsById[m.id] = i;
+            //console.log("m.id: " + m.id + " = " + i);
+        }
         
         // load selects and date editors for add/edit forms:
         $('#[[+gridID]]Container').find('select').each(function() {
@@ -336,12 +354,18 @@ $(function() {
             var tmpName = $(this).attr("name");
             switch (dataEditor) {
                 case 'Slick.Editors.BasicSelect':
+                    var tmpColumnObject = columns[grid.getColumnIndex(tmpName)];
+                    if (typeof tmpColumnObject == "undefined" ) {
+                        //console.log("Undefined: " + tmpName + " ID: " + grid.completeColumnsById[tmpName]+ ' OBJECT? ' + grid.completeColumnsById);
+                        tmpColumnObject = completeColumns[grid.completeColumnsById[tmpName]];
+                    } 
+                    
                     var tmpArgs = {
-                        column: columns[grid.getColumnIndex(tmpName)], //tmpName, completeColumns[index].field
+                        column: tmpColumnObject, //tmpName, completeColumns[index].field
                         container: $(this),
                         existingID: $(this).attr("id")
                         }
-                    //console.log("Column: " + tmpName + " - " + columns[grid.getColumnIndex(tmpName)]  );
+                    //console.log("Column: " + tmpName + " - " + tmpColumnObject + " -- " +columns[grid.getColumnIndex(tmpName)]  );
                     //console.log("Columns: " + completeColumns  );
                     Slick.Editors.BasicSelect(tmpArgs);
                     break;

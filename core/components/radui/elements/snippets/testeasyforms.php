@@ -37,7 +37,6 @@ $form->addField('first_name', 'txt_first_name',
             // checkbox, radio, hidden, image, ect.. (combobox, autosuggest, )
         
         // ,'require' => '', // HTML5 attribute
-        
         'value' => '', // a default value
         'parent' => 'first_list', // 0(null) or the parent element ID
             //'location' => childElement(default), startElement, endElement, or midElement
@@ -94,13 +93,11 @@ $form->addContainer('li', 'radio_buttons', array(
         'class' => 'full',
         'parent' => 'first_list',
         'startElement' => '<p>Choose your favorite team</p>'
-        
     ) 
 );
     $form->addContainer('ul', 'nested_list', array(
             'class' => '',
             'parent' => 'radio_buttons'
-            
         ) 
     );
         $form->addField('fav_team', 'rd_fav_team', 

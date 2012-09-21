@@ -248,7 +248,7 @@ var JSONCache = [];
 			        if ( typeof JSONCache[args.column.selectOptions.url] != "undefined" ) {
 			             JSON_data = JSONCache[args.column.selectOptions.url];
 			        } else {
-			            /*
+			            /* 
 			            $.getJSON(args.column.selectOptions.url, function(data) {
                             console.log("Data: " + data); //uncomment this for debug
                             //alert (data.item1+" "+data.item2+" "+data.item3); //further debug

@@ -148,7 +148,16 @@ class SlickGrid extends DataGrid {
      */
 	function __construct(modX &$modx, $scriptProperties) {
 		$this->modx =& $modx;
-        $this->scriptProperties = $scriptProperties;
+        $this->scriptProperties = array_merge(array(
+              'editable' => 'true',
+              'enableAddRow' => 'false',
+              'enableCellNavigation' => 'true',
+              'asyncEditorLoading' => 'false',
+              'autoEdit' => 'true',// Cell will not automatically go into edit mode when selected.
+              'enableColumnReorder' => 'true',
+              'syncColumnCellResize' => 'true',
+              'urlParams' => '{}',
+            ),$scriptProperties);
         
 	}
     /**
@@ -247,7 +256,7 @@ class SlickGrid extends DataGrid {
                         }
                     } else if (is_numeric($value)) {
                         $json .= $value;
-                    } else if (is_bool($value)) {
+                    } else if ( strtolower($value) == 'true' || strtolower($value) == 'false' || is_bool($value)) {
                         $json .= $value;
                     } else {
                         switch ($name) {
@@ -296,9 +305,9 @@ class SlickGrid extends DataGrid {
             'addUrl' => $this->modx->getOption('addUrl', $this->scriptProperties, $dataUrl),
             'editUrl' => $this->modx->getOption('editUrl', $this->scriptProperties, $dataUrl),
             'deleteUrl' => $this->modx->getOption('deleteUrl', $this->scriptProperties, $dataUrl),
-            'importUrl' => $this->modx->getOption('importUrl', $this->scriptProperties, $dataUrl),
+            'importUrl' => $this->modx->getOption('importUrl', $this->scriptProperties, $dataUrl)
         );
-        
+        $placeholders = array_merge($this->scriptProperties, $placeholders);
         // &toArray - list of availabe properties and placeholders?
         $cssChunk = $this->modx->getOption('tplCSS', $this->scriptProperties, 'SlickGridCss');
         $jsChunk = $this->modx->getOption('tplJS', $this->scriptProperties, 'SlickGridJs');
@@ -324,25 +333,43 @@ class SlickGrid extends DataGrid {
         if ( !empty($this->columnData)) {
             foreach ( $this->columnData as $columnName=>$row) {
                 $columnCount++;
+                
+                $firstOption = TRUE;
+                if ( isset($row->firstOption) && (!(boolean) $row->firstOption || $row->firstOption == 'false' )) {
+                    $firstOption = FALSE;
+                }
                 switch ($formType) {
                     case 'Add':
                         // print_r($row);
-                        if ( isset($row->onAddVisible) && ( $row->onAddVisible || $row->onAddVisible == 'true') ) {
-                            // make the form element
-                            $form .= $this->formElement($row, FALSE, $formType);
+                        if ( isset($row->onAddVisible) ) {
+                            $add_me = (boolean) $row->onAddVisible; 
+                            if ( !$add_me || $row->onAddVisible == 'false' ) {
+                                // do nothing
+                            } else {
+                                // make the form element
+                                $form .= $this->formElement($row, $firstOption, $formType);
+                            }
                         }
                         break;
                     case 'Search':
-                        if ( isset($row->search) && ( $row->search || $row->search == 'true') ) {
-                            // make the form element
-                            $form .= $this->formElement($row, TRUE, $formType);
-                        }
+                        if ( isset($row->search) ) {
+                            if (  !(boolean) $row->search || $row->search == 'false' ) {
+                                // do nothing
+                            } else {
+                                // make the form element
+                                $form .= $this->formElement($row, $firstOption, $formType);
+                            }
+                        } 
                         break;
                     case 'Edit':
                     default:
-                        if ( isset($row->onEditVisible) && ( $row->onEditVisible || $row->onEditVisible == 'true') ) {
-                            // make the form element
-                            $form .= $this->formElement($row, FALSE, $formType);
+                        if ( isset($row->onEditVisible) ) {
+                            if ( !(boolean) $row->onEditVisible || $row->onEditVisible == 'false' ) {
+                                // do nothing
+                            } else {
+                                // make the form element
+                                $form .= $this->formElement($row, $firstOption, $formType);
+                            }
                         }
                         break;
                 }
@@ -443,7 +470,7 @@ class SlickGrid extends DataGrid {
         <li class="'.$holderCss.'">
             <label for="'.$this->gridID.$formType.'_'.$data->field.'">'.$data->name.'</label>
             <select name="'.$data->field.'" class="'.$cssClass.' '.$jsclass.'" id="'.$this->gridID.$formType.'_'.$data->field.'" '
-                .( $isRequired ? 'require' : '').' title="Error message" placeholder="Display message" data-editor="'.$data->editor.'">
+                .( $isRequired ? 'require' : '').' title="Error message" placeholder="" data-editor="'.$data->editor.'">
 				'.($firstOption ? '<option value="" >Select</option>' : '' ).'
             </select>
         </li>';
@@ -454,7 +481,7 @@ class SlickGrid extends DataGrid {
         <li class="'.$holderCss.'">
             <label for="'.$this->gridID.$formType.'_'.$data->field.'">'.$data->name.'</label>
             <textarea name="'.$data->field.'" class="'.$cssClass.' '.$jsclass.'" id="'.$this->gridID.$formType.'_'.$data->field.'" '
-                .( $isRequired ? 'require' : '').' title="Error message" placeholder="Display message"></textarea>
+                .( $isRequired ? 'require' : '').' title="Error message" placeholder=""></textarea>
         </li>';
                 
                 break;
@@ -464,7 +491,7 @@ class SlickGrid extends DataGrid {
                 $element = '
         <li class="'.$holderCss.'">
             <input type="'.$type.'" name="'.$data->field.'" value="" class="'.$cssClass.' '.$jsclass.'" id="'.$this->gridID.$formType.'_'.$data->field.'" '
-                .( $isRequired ? 'require' : '').' title="Error message" placeholder="Display message" />
+                .( $isRequired ? 'require' : '').' title="Error message" placeholder="" />
             <label for="'.$this->gridID.$formType.'_'.$data->field.'">'.$data->name.'</label>
         </li>';
                 break;

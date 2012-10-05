@@ -28,11 +28,22 @@ class Crud {
      */
     protected $config = array();
     /**
+     * @param (Boolean) foreign - true to use foreign db
+     */
+    protected $foreign = false;
+    /**
+     * @param (object) $foreignDB - the foreignDB xpdo connection
+     */
+    public $foreignDB;
+    /**
      * @param modx $modx 
      * 
      */
     public $modx;
-    
+    /**
+     * 
+     */
+    public $db_object = 'modx';
     /**
      * @param (String) $error_message
      * 
@@ -51,22 +62,57 @@ class Crud {
         $this->config['packagePath'] = MODX_CORE_PATH.$this->modx->getOption('packagePath',$scriptProperties,'');
         $this->config['lexicon'] = $this->modx->getOption('lexicon',$scriptProperties, $this->config['package'].':default');
         
-        $this->modx->addPackage($this->config['package'], $this->config['packagePath']);
+		$this->classKey = $this->modx->getOption('classKey',$scriptProperties, '');
         
+        // connect to foreign db:
+        $this->foreign = (boolean) $this->modx->getOption('foreign',$scriptProperties, FALSE);
+        if ( $this->foreign ){
+            $this->db_object = 'foreignDB';
+            require 'foreignconnect.class.php';
+            $prefix = '';
+            $config_file = $this->modx->getOption('configFile',$scriptProperties, NULL);
+            if ( !empty($config_file) ) {
+                require $config_file;
+            } else {
+                $db_type = $this->modx->getOption('dbType',$scriptProperties, 'mysql');
+                $db_server = $this->modx->getOption('dbServer',$scriptProperties, 'localhost');
+                $db_charset = $this->modx->getOption('dbCharset',$scriptProperties, 'utf8');
+                $db_name = $this->modx->getOption('dbName',$scriptProperties, 'modx');
+                $db_user = $this->modx->getOption('dbUser',$scriptProperties, 'modx_user');
+                $db_password = $this->modx->getOption('dbPassword',$scriptProperties, 'password');
+                $prefix = $this->modx->getOption('tablePrefix',$scriptProperties, '');
+                
+                $db_dsn = $db_type.':host='.$db_server.';dbname='.$db_name.';charset='.$db_charset;
+            }
+            // $this->modx->log(modX::LOG_LEVEL_ERROR,'DSN: '.$db_dsn);
+            $this->foreignDB = ForeignConnect::getInstance($db_dsn, $db_user, $db_password); // returns an xPDO instance
+            
+            //echo ($this->foreignDB->connect()) ? 'Connected' : 'Not Connected';
+        }
+        // load package manually:
+        $db_object = $this->db_object;
+        
+        if ( $this->foreign ) {
+            if ( !$this->foreignDB->addPackage('website_db'/*$this->config['package'].'asdfasdfasd'*/, $this->config['packagePath'], '') ){
+                //echo '<br>Could not load package: '.$this->config['package'].' - '.$this->config['packagePath'];
+            }
+            //echo '<br>Loaded package: '.$this->config['package'].' - '.$this->config['packagePath'].' with Prefix: '.$prefix;
+            //$tmp = $this->foreignDB->newObject($this->classKey);
+            //$tmp->fromArray(array());
+        } else {
+            $this->modx->addPackage($this->config['package'],$this->config['packagePath']);
+        }
+		// $this->modx->addPackage($this->config['package'], $this->config['packagePath']);
         if ($this->modx->lexicon) {
             $this->modx->lexicon->load($this->config['lexicon']);
         }
-        
-		$this->classKey = $this->modx->getOption('classKey',$scriptProperties, '');
-        $this->primaryKey = $this->modx->getOption('primaryKey',$scriptProperties, 'id');
-        
-        
-        // load package manually:
-        $corePath = $this->modx->getOption('core_path').'components/'.$this->config['package'].'/model/';
-                
-        $this->modx->addPackage($this->config['package'],$corePath);
-        
-		
+        $pk = 'id';
+        $item = $this->$db_object->newObject($this->classKey);
+        if ( is_object($item) ){
+            $pk = $item->getPK();
+        }
+        $this->primaryKey = $this->modx->getOption('primaryKey',$scriptProperties, $pk );
+        //echo 'PK: '.$pk;
 	}
     
     
@@ -75,7 +121,7 @@ class Crud {
      * (Read)
      */
     public function getList(){
-        
+        // $_REQUEST['limit'] = 10;
         $isLimit = !empty($_REQUEST['limit']);
         $start = $this->modx->getOption('start',$_REQUEST,0);
         $limit = $this->modx->getOption('limit',$_REQUEST,999999);
@@ -86,31 +132,32 @@ class Crud {
         //print_r($this->config);
         //echo '<br>K: '.$this->classKey;
         // $groupfilter = $modx->getOption('groupfilter',$_REQUEST,'');
-        
         /* query for subscribers */
-        $c = $this->modx->newQuery($this->classKey);
+        $db_object = $this->db_object;
+        $c = $this->$db_object->newQuery($this->classKey);
         // @TODO allow for joins via the snippet call
-        
         $c = $this->searchList($c);
         
         $c = $this->excludeList($c);
         
         $c = $this->sortList($c);
         
-        $totalRecords = $this->modx->getCount($this->classKey,$c);
+        $totalRecords = $this->$db_object->getCount($this->classKey,$c);
         
         $c->sortby($sort,$dir);
         if ($isLimit) {
             $c->limit($limit,$start);
         }
-        $count = $this->modx->getCount($this->classKey,$c);
+        $count = $this->$db_object->getCount($this->classKey,$c);// this does not seem to work for my foreign class?  only returns complete total
         
-        $items = $this->modx->getCollection($this->classKey,$c);
+        $items = $this->$db_object->getCollection($this->classKey,$c);
+        
+        //echo 'PK: '. $items->getPK();
         
         /* iterate through subscribers */
         $data = array();
+        $item_count = 0;
         if ($count > 0) {
-            $item_count = 1;
             foreach ($items as $item) {
                 $item = $item->toArray();
                 if ( $this->canUpdate() ) {
@@ -119,15 +166,18 @@ class Crud {
                 if ( $this->canDelete() ) {
                     $item['deleteLink'] = 'Delete';
                 }
-                $item['item_kount'] = $item_count++;
+                $item['item_kount'] = ++$item_count;
                 // what about custom filters?
+                $item = $this->filterList($item);
+                // add the radui_object_id 
+                $item['radui_object_id']  = $item[$this->primaryKey];
                 $data[] = $item;
             }
         }
         if ( 1 == 1 ) {
             $status = 'success';
         }
-        return $this->makeJson($status, $count.' records were returned, with a total of '. $totalRecords.' records', $totalRecords, $count, $data); //$list,$count);
+        return $this->makeJson($status, $item_count.' records were returned, with a total of '. $totalRecords.' records', $totalRecords, $item_count, $data); //$list,$count);
     }
     /**
      * (Create)
@@ -141,6 +191,7 @@ class Crud {
             $data = $_POST;
         }
         $this->inputData = $data;
+        $db_object = $this->db_object;
         
         if ( !$this->canCreate() ) {
             $status = 'failed';
@@ -150,8 +201,8 @@ class Crud {
             $message = 'This item appears to be a duplicate';
         } else {
             // this is a new object
-            $item = $this->modx->newObject($this->classKey);
-            $this->filterCreate();
+            $item = $this->$db_object->newObject($this->classKey);
+            $item = $this->filterCreate($item);
             if ( $this->validate() && is_object($item) ) {
                 
                 $item->fromArray($this->inputData);
@@ -200,6 +251,7 @@ class Crud {
             $data = $_POST;
         }
         $this->inputData = $data;
+        $db_object = $this->db_object;
         
         if ( !$this->canUpdate() ) {
             $status = 'failed';
@@ -209,12 +261,21 @@ class Crud {
             $message = 'The field X needs to be unique, the value X is already used.';
         } else {
             // this is a new object
-            $pri = (isset($this->inputData[$this->primaryKey]) ? $this->inputData[$this->primaryKey] : 0 );
-            $this->filterUpdate();
-            $item = $this->modx->getObject($this->classKey, array($this->primaryKey => $pri));
+            $pri = 0;
+            if ( isset( $this->inputData['radui_object_id']) ) {
+                $pri = $this->inputData['radui_object_id'];
+                if ( !isset($this->inputData[$this->primaryKey]) ) {
+                    $this->inputData[$this->primaryKey] = $this->inputData['radui_object_id'];
+                }
+            } else {
+                $pri = (isset($this->inputData[$this->primaryKey]) ? $this->inputData[$this->primaryKey] : 0 );
+            }
+            $item = $this->$db_object->getObject($this->classKey, array($this->primaryKey => $pri));
+            $item = $this->filterUpdate($item);
             if ( empty($item) ) {
                 $status = 'failed';
                 $message = 'Item not found';
+                $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/create()] Error finding item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
             } else if ( $this->validate() ) {
                 
                 $item->fromArray($this->inputData);
@@ -222,6 +283,7 @@ class Crud {
                 $item = $this->setUpdateDefaults($item);
                 
                 if ($item->save()) {
+                    $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/create()] Updated item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
                     if ( $this->updateDependants($item) ) {
                         $status = 'success';
                         $message = 'Updated record';
@@ -267,13 +329,22 @@ class Crud {
             $data = $_POST;
         }
         $this->inputData = $data;
+        $db_object = $this->db_object;
         if ( !$this->canDelete() ) {
             $status = 'failed';
             $message = 'You do not have permissions to delete the item.';
         } else {
             // this is a new object
-            $pri = (isset($this->inputData[$this->primaryKey]) ? $this->inputData[$this->primaryKey] : 0 );
-            $item = $this->modx->getObject($this->classKey, array($this->primaryKey => $pri));
+            $pri = 0;
+            if ( isset( $this->inputData['radui_object_id']) ) {
+                $pri = $this->inputData['radui_object_id'];
+                if ( !isset($this->inputData[$this->primaryKey]) ) {
+                    $this->inputData[$this->primaryKey] = $this->inputData['radui_object_id'];
+                }
+            } else {
+                $pri = (isset($this->inputData[$this->primaryKey]) ? $this->inputData[$this->primaryKey] : 0 );
+            }
+            $item = $this->$db_object->getObject($this->classKey, array($this->primaryKey => $pri));
             if ( empty($item) ) {
                 $status = 'failed';
                 $message = 'Item not found';
@@ -416,6 +487,7 @@ class Crud {
             if ( strpos($name,'search_') === 0 && !empty($value) ) {
                 // 'start_date:LIKE' => $start_where.'%'
                 $search[str_replace('search_', '', $name).':LIKE'] = $value.'%';
+                //echo 'SEARCH: '.$name;
             }
         }
         if ( count($search) > 0 ) {
@@ -497,20 +569,29 @@ class Crud {
     /**
      * Filter input data - this is not validataion.  Example you allow the user to set a column with readable values
      *      but these need to corrispond to a table ID.  Filter that here
-     * @return VOID
+     * @return (Object) $item
      */
-    protected function filterCreate() {
+    protected function filterCreate($item) {
         // filter $this->inputData
-        return;
+        return $item;
     }
     /**
      * Filter input data - this is not validataion.  Example you allow the user to set a column with readable values
      *      but these need to corrispond to a table ID.  Filter that here
-     * @return VOID
+     * @return (Object) $item
      */
-    protected function filterUpdate() {
+    protected function filterUpdate($item) {
         // filter the $this->inputData
-        return;
+        return $item;
+    }
+    /**
+     * filter the item array output
+     * @param (object) $item
+     * @return (Object) $item
+     */
+    protected function filterList($item) {
+        // @TODO make default?
+        return $item;
     }
     
     /**
@@ -574,8 +655,9 @@ class Crud {
         $groupby = $this->modx->getOption('groupby',$_REQUEST,'');
         $label = $this->modx->getOption('label',$_REQUEST,'Data');
         
+        $db_object = $this->db_object;
         /* query for */
-        $query = $this->modx->newQuery($this->classKey);
+        $query = $this->$db_object->newQuery($this->classKey);
         // @TODO allow for joins via the snippet call
         
         $xaxis = $this->modx->getOption('xAxis',$_REQUEST,'');

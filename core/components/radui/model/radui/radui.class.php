@@ -79,11 +79,12 @@ class RadUi {
         if ( !empty($folder) ) {
             $folder .= '/';
         }
+        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI] Load '.$crudName.' class in '.$folder.' folder');
         if ($this->modx->loadClass($crudName,MODX_CORE_PATH.'/components/radui/model/radui/'.$folder,true,true)) {
             $this->crud = new $crudName($this->modx, $scriptProperties);
             return $this->crud;
         } else {
-            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI] Could not load the '.$gridName.' class.');
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI] Could not load the '.$crudName.' class.');
         }
         return false;
     }

@@ -319,7 +319,7 @@ var JSONCache = [];
                     $select.appendTo('#'+args.existingID);
                 } else {
                     // inline
-                    $select = $('<select tabIndex="0" class="editor-select">'+ option_str +"</select>");
+                    $select = $('<select tabIndex="0" class="editor-select"><option value="">Select</option>'+ option_str +"</select>");
                     //console.log("O: " + option_str + " - C: " + args.container);
     				$select.appendTo(args.container);
     				$select.focus();

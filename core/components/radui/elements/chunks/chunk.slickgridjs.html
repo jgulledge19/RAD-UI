@@ -94,6 +94,9 @@ $(function() {
      */
     var mysqlDateFormatter = function (row, cell, value, columnDef, dataContext) {
         // 2012-09-14 13:54:06
+        if ( value == null ) {
+            return '';
+        }
         var tDate = value.split(" ");
         var tDates = tDate[0].split("-");
         // console.log(tDates[1]*1 + "/" + tDates[2]*1 + "/" + tDates[0]);
@@ -104,29 +107,26 @@ $(function() {
     // the ajax info:
     var ajaxOptions = {
         baseUrl: '[[+dataUrl]]',
-        urlParams: [{name: 'id', value: 2064}],
+        urlParams: [],
         action: 'getCollection',
         limit: 5000,
         sortCol: 'last_name',
         sortDir: 'ASC',
     };
-  
-    var loader = new Slick.Data.JsonModel(ajaxOptions);
-
+    
     var columns = []; 
     var completeColumns = [
         [[+dataColumns]]
     ];
 
-    
     var options = {
-        editable: true,
-        enableAddRow: false,
-        enableCellNavigation: true,
-        asyncEditorLoading: false,
-        autoEdit: true,// Cell will not automatically go into edit mode when selected.
-        enableColumnReorder: true,
-        syncColumnCellResize: true
+        editable: [[+editable:default=`true`]],
+        enableAddRow: [[+enableAddRow:default=`true`]],
+        enableCellNavigation: [[+enableCellNavigation:default=`true`]],
+        asyncEditorLoading: [[+asyncEditorLoading:default=`false`]],
+        autoEdit: [[+autoEdit:default=`true`]],// Cell will not automatically go into edit mode when selected.
+        enableColumnReorder: [[+enableColumnReorder:default:`true`]],
+        syncColumnCellResize: [[+syncColumnCellResize:default=`true`]]
         /*
         rowHeight: 64,
         enableRowReordering,
@@ -140,6 +140,25 @@ $(function() {
      * Load grid
      */
     var loadingIndicator = null;
+    
+    var loader = '';
+    $(function() {
+        var defaultParams = [[+urlParams:default=`{}`]];// needs to be like: {name:value,name:value...}
+        $.each(defaultParams, function(i, val) {
+           ajaxOptions.urlParams.push({'name': i, 'value': val });
+        });
+        /*
+        $("#[[+gridID]]Search select").each(function(index, value) {
+            console.log('index: ' + index + ':' + $(this).attr('id') + ' val: ' + $(this).val() ); 
+            var tmpStr = $(this).val();
+            var tmpField = $(this).attr('name');//data-field");
+            if (typeof tmpStr != "undefined" && tmpStr != '' ) {
+                ajaxOptions.urlParams.push({'name': "search_"+tmpField, 'value': tmpStr });
+            }
+        });
+        */
+        loader = new Slick.Data.JsonModel(ajaxOptions);
+    });    
     
     /**
      * Locale Grid: 
@@ -247,7 +266,7 @@ $(function() {
                 "[[+dataUrl]]", 
                 { 
                     'action': "saveCell",
-                    'id': loader.data[args.row]['id'],
+                    'radui_object_id': loader.data[args.row]['radui_object_id'],
                     'field': tmpF,
                     'value': loader.data[args.row][grid.getColumns()[args.cell].field]
                 },
@@ -408,13 +427,13 @@ $(function() {
             } else {
                 // build the visible columns:
                 columns[count++] = myColumns[i]; 
+                columnOrder[i] = i;
             }
             columnForm += 
                 '<li class="small spaceRight ">' +
                     '<input type="checkbox" id="col_'+ myColumns[i].field + '" '+checked+' class="jsChangeColumns radio" value="'+ i +'"> '+
                     '<label for="col_'+ myColumns[i].field + '">'+ myColumns[i].name + '</label>' +
                 '</li>';
-            columnOrder[i] = i;
         }
         //console.log(columnForm);
         $('#[[+gridID]]ShowColumns form ul').html(columnForm);
@@ -588,6 +607,9 @@ $(document).ready(function () {
                                     .removeClass("visible");
                                 $('#[[+gridID]]AddForm').resetForm();
                                 displayGridMessage(data['message']);
+                                var vp = grid.getViewport();
+                                loader.reloadData(vp.top, vp.bottom);
+                                grid.render();
                             } else {
                                 // there was an error:
                                 $('#[[+gridID]]AddForm .message')
@@ -654,6 +676,8 @@ $(document).ready(function () {
                                 $("#[[+gridID]]EditFormDiv").dialog("close");
                                 displayGridMessage(data['message']);
                                 // @TODO find a way to add the data to the grid so not to re-render
+                                var vp = grid.getViewport();
+                                loader.reloadData(vp.top, vp.bottom);
                                 grid.render();
                             } else {
                                 // there was an error:

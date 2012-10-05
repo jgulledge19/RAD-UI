@@ -13,7 +13,7 @@
         <form id="[[+gridID]]EditForm" action="[[+editUrl]]" method="post" class="formColumn">
             <div class="message"></div>
             <input type="hidden" name="action" value="update" />
-            <input type="hidden" name="id" value="" />
+            <input type="hidden" name="radui_object_id" value="" />
             <ul>
                 [[+editForm]]
             </ul>
@@ -24,7 +24,7 @@
             <div class="message"></div>
             <h2>Our you sure you want to delete this record?</h2>
             <input type="hidden" name="action" value="delete" />
-            <input type="hidden" name="id" value="" />
+            <input type="hidden" name="radui_object_id" value="" />
             [[+deleteForm]]
         </form>
     </div>

@@ -17,15 +17,48 @@ $output = '';
 
 $form = $RadUi->newForm($scriptProperties);
 //$action = $modx->getOption('action', $_REQUEST, 'getList');
-// just for my IDE to get the docs, comment out on run:
-// $form = new EasyForms();
+
+// just for my IDE to get the docs comments
+if ( 1== 2 ) {
+ $form = new EasyForms();
+}
 // load default data:
-$form->loadData(array());
+$default_data = array();
+$error = FALSE;
+if (isset($_POST['submit_form']) ) {// this is the form submit button name
+    // process data on success redirect to a thankyou, confirm or the next step page
+    // $modx->redirect();
+    // on error show error message and 
+    $default_data = $_POST;
+    $error = TRUE;
+}
+$form->loadData($default_data);
 /**
  * Create the fields:
  */
 $form->setForm('method', 'post');
 $form->setForm('action', '[[~[[*id]]]]');
+if ( $error ) {
+    // custom error message
+    $form->addContainer('div', 'message');
+    $form->addHtml(
+        '<p>There are erros on the page please revise...<p>
+        ', 
+            'error1', // this is the elementID
+            // you can still use the config to process your html as a Chunk: 
+            array(
+                'class' => 'myErrors',
+                'parent' => 'message',
+                'label' => 'This is a custom HTML field that is using the API placeholders'
+        ) 
+    );
+    
+    // add CSS error class to label:
+    $form->addClass('txt_first_name', 'formError', 'label');
+    $form->addClass('txt_last_name', 'formError', 'label');
+}
+
+
 $form->addContainer('ul', 'first_list');
 /** type, ID, array of options */
 $form->addField('first_name', 'txt_first_name', 
@@ -104,6 +137,7 @@ $form->addContainer('li', 'radio_buttons', array(
             array(
                 'element' => 'radio', // existing types: - input, textarea, select, radio, checkbox, hidden (these have corrasponding Chunks )
                 'type' => 'radio',// is this needed?
+                'class' => 'radio', // the CSS class for the build element
                 'parent' => 'nested_list', // 0(null) or the parent element ID
                 'title' => 'Bulls',
                 'attr' => '', // you can add inline CSS or other attributes to the form element
@@ -116,6 +150,7 @@ $form->addContainer('li', 'radio_buttons', array(
             array(
                 'element' => 'radio', // existing types: - input, textarea, select, radio, checkbox, hidden (these have corrasponding Chunks )
                 'type' => 'radio',// is this needed?
+                'class' => 'radio', // the CSS class for the build element
                 'parent' => 'nested_list', // 0(null) or the parent element ID
                 'title' => 'Heat',
                 'attr' => '', // you can add inline CSS or other attributes to the form element
@@ -131,16 +166,16 @@ $form->addContainer('li', 'custom_html', array(
         'parent' => 'first_list',
     ) 
 );
-    // radio buttons:
     $form->addHtml(
         '<label for="[[+elementID]]" class="[[+labelClass]]" [[+labelAttr]]>[[+label]]</label>
         <input name="mycustomHtmlField" type="password" value="[[+value]]" id="[[+elementID]]" class="[[+class]]" title="[[+title]]" [[+attr]] />
-        <!-- allow child element to be attached via the API -->
+        <!-- allow child element to be attached via the API: use the +childElement property -->
         [[+childElement]] 
         ', 
             'myhtml_id', // this is the elementID
             // you can still use the config to process your html as a Chunk: 
             array(
+                'name' => 'mycustomHtmlField',// this is the form element name, we can then use the [[+value]] to set default and POST 
                 'class' => 'myclass',
                 'parent' => 'custom_html',
                 'label' => 'This is a custom HTML field that is using the API placeholders'
@@ -155,13 +190,43 @@ $form->addContainer('li', 'custom_html', array(
         );
         // even attach more custom elements:
         $form->addHtml('<p>My nested info...</p>', 'mynested_id', array( 'parent' => 'myhtml_id') );
+        
+        
+    
+$form->addField('comments', 'txt_comments', 
+    array(
+        'element' => 'textarea', // existing types: - input, textarea, select, radio, checkbox, hidden (these have corrasponding Chunks )
+        //'type' => 'text', // input -> button, text, file, reset, submit,password,
+            // checkbox, radio, hidden, image, ect.. (combobox, autosuggest, )
+        'parent' => 'first_list', // 0(null) or the parent element ID
+        'title' => '',
+        'label' => 'Enter in a comment', // $formName (name) by default
+        'containerClass' => 'clear full',
+    )
+);
+
+$form->addField('agree', 'ch_agree', 
+    array(
+        'element' => 'checkbox', // existing types: - input, textarea, select, radio, checkbox, hidden (these have corrasponding Chunks )
+        'type' => 'checkbox',// is this needed?
+        'class' => 'radio', // the CSS class for the build element
+        'parent' => 'first_list', // 0(null) or the parent element ID
+        'title' => 'Yes',
+        'attr' => '', // you can add inline CSS or other attributes to the form element
+        'value' => 'Yes',
+        'label' => 'I agree to not read the fine print...', // $formName (name) by default
+        'containerClass' => 'clear full',
+    )
+);
+ 
+        
 // finially add a submit button:
 $form->addSubmit('submit_form', 'btn_submit_form', 
     array(
         'value' => 'Submit this form!', // a default value
-        'parent' => 'first_list', // 0(null) or the parent element ID
+        //'parent' => 'first_list', // 0(null) or the parent element ID
         'class' => 'mysubmit_button', // user input
-        'containerClass' => 'clear medium',
+        //'containerClass' => 'clear medium',
     )
 );
 

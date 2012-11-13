@@ -52,6 +52,14 @@ class EasyForms {
      */
     protected $associated = array();
     /**
+     * the element properties that will be added before on render - array('element_id' => array('property'=>value))
+     */
+    protected $add_properties = array();
+    /**
+     * the remove CSS classes list array('element_id' => array('CSSPlace'=>value))
+     */
+    protected $remove_properties = array();
+    /**
      * pad the HTML with spaces 
      */
     protected $pad_lines = true;
@@ -220,6 +228,9 @@ class EasyForms {
         if ( !isset($config['value']) ) {
             $config['value'] = $fieldName;
         }
+        if ( !isset($config['element']) ) {
+            $config['element'] = 'div';
+        }
         return $this->addElement($id, $config);
     }
     /**
@@ -250,6 +261,31 @@ class EasyForms {
      */
     protected function addElement($id, $config) {
         $this->elements[$id] = $config;
+        
+        // add any preexisting properties
+        if ( isset($this->add_properties[$id]) ) {
+            foreach($this->add_properties[$id] as $property => $value) {
+                if ( isset($this->elements[$id][$property]) ) {
+                    $this->elements[$id][$property] .= ' '.$value;
+                } else {
+                    $this->elements[$id][$property] = $value;
+                }
+            }
+        }
+        // remove preexisting removes:
+        if ( isset($this->remove_properties[$id]) ) {
+            foreach($this->remove_properties[$id] as $property => $value) {
+                if ( isset($this->elements[$id][$property]) ) {
+                    if ( is_array($value) ) {
+                        foreach ($value as $v) {
+                            $this->elements[$id][$property] = str_replace($v, '', $this->elements[$id][$property]);
+                        }
+                    } else {
+                        $this->elements[$id][$property] = str_replace($value, '', $this->elements[$id][$property]);
+                    }
+                }
+            }
+        }
         
         // now the associated:
         $parent = 0;
@@ -317,18 +353,68 @@ class EasyForms {
      * @param (string) $element_id - the id for the HTML 
      *    element that is to have a class added 
      * @param (string) $class - can be one or many, just separate with space as you would in HTML
+     * @param (String) $place - default: element or which is the class property - other values: containerClass, labelClass or for short container, label
      */
-    public function addClass($element_id, $class) {
-        
+    public function addClass($element_id, $class, $place='class') {
+        switch ($place) {
+            case 'container':
+                $place = 'containerClass';
+                break;
+            case 'label':
+                $place = 'labelClass';
+                break;
+        }
+        // add immediatly if possible:
+        if ( isset($this->elements[$element_id]) ) {
+            if ( isset($this->elements[$element_id][$place]) ) {
+                $this->elements[$id][$place] .= ' '.$class;
+            } else {
+                $this->elements[$id][$place] = $class;
+            }
+        }
+        // add when the elment is created:
+        $this->add_properties[$element_id] = array($place => $class );
     }
     /**
-     * add a class to an existing HTML element
+     * remove a class from an existing HTML element
+     * @param (string) $element_id - the id for the HTML element that is to have a class removed 
+     * @param (mixed) $class - can be one string or an array of many: array('class1', 'class2');
+     * @param (String) $place - default: element or which is the class property - other values: containerClass, labelClass or for short container, label
+     */
+    public function removeClass($element_id, $class, $place='class') {
+        switch ($place) {
+            case 'container':
+                $place = 'containerClass';
+                break;
+            case 'label':
+                $place = 'labelClass';
+                break;
+        }
+        // remove immediatly if possible
+        if ( isset($this->elements[$element_id]) ) {
+            if ( isset($this->elements[$element_id][$place]) ) {
+                if ( is_array($class) ) {
+                    foreach ($class as $v) {
+                        $this->elements[$id][$place] = str_replace($v, '', $this->elements[$id][$place]);
+                    }
+                } else {
+                    $this->elements[$id][$place] = str_replace($class, '', $this->elements[$id][$place]);
+                }
+            }
+        }
+        // remove when the element is created
+        $this->remove_properties[$element_id] = array($place => $class );
+    }
+    
+    /**
+     * add a property to an existing HTML element
      * @param (string) $element_id - the id for the HTML 
      *    element that is to have a class added 
-     * @param (string) $class - can be one or many, just separate with space as you would in HTML
+     * @param (string) $property - the element property name
+     * @param (Mixed) $value
      */
-    public function removeClass($element_id, $class) {
-        
+    public function addProperty($element_id, $property, $value) {
+        $this->add_properties[$id] = array($property => $value );
     }
     
     /**
@@ -430,6 +516,7 @@ class EasyForms {
                     if ( is_array($value) ) {
                         $option_str .= '<optgroup label="'.$name.'">';
                         foreach ( $value as $n => $v ) {
+                            $selected = '';
                             if ( $v == $selected_value ) {
                                 $selected = 'selected="selected"';
                             }
@@ -455,10 +542,17 @@ class EasyForms {
             }
             //@TODO checkbox groups:
             
+            // set the value for all hidden, text, textarea on POST/GET 
+            if ( isset($properties['name']) && isset($this->default_data[$properties['name']]) && 
+                $properties['elementType'] == 'field' && 
+                ( $properties['element'] == 'textarea' || ($properties['element'] == 'input' && $properties['type'] == 'text' ) ) ) {
+                $properties['value'] = $this->default_data[$properties['name']];
+            }
             // set basic properties to empty/null - this to to reduce processing and pushed down placeholders
             $empty_data = array(
                      'elementType' => '',
                      'parent' => '',
+                     'value' => '',
                      // 'location' => childElement(default), startElement, endElement, or midElement
                      'class' => '',
                      'attr' => '',
@@ -480,10 +574,18 @@ class EasyForms {
                      'placeBefore' => '',
                 );
             $properties = array_merge($empty_data, $properties);
+            
+            
+            
             $html = '';
             if ( $properties['elementType'] == 'html' ) {
                 $chunk = $this->modx->newObject('modChunk');
                 $chunk->setContent($properties['html']);
+                $properties['elementID'] = $parent;
+                
+                if ( isset($properties['name']) && isset($this->default_data[$properties['name']]) ) {
+                    $properties['value'] = $this->default_data[$properties['name']];
+                }
                 $html = $chunk->process($properties);
             } else {
                 if ( isset($properties['chunk']) ) {

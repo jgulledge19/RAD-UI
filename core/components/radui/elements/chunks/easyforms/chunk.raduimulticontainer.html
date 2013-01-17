@@ -1,0 +1,15 @@
+<div id="[[+containterID]]" class="[[+containerClass]]" [[+containerAttr]]> 
+    [[+startElement]]
+    <label for="[[+elementID]]" class="[[+labelClass]]" [[+labelAttr]]>[[+label]]</label>
+    [[+midElement]]
+    <!-- changable via a JS -->
+    <input name="[[+name]]" type="hidden" value="[[+value]]" id="[[+elementID]]" [[+attr]] />
+    <!-- hiddens not changable - but for info in JS -->
+    <input name="[[+name]]_limit" type="hidden" value="[[+multiLimit]]" id="[[+elementID]]_limit" [[+attrLimit]] />
+    <input name="[[+name]]_require" type="hidden" value="[[+multiRequire]]" id="[[+elementID]]_require" [[+attrRequire]] />
+    <!-- end none changables -->
+    
+    [[+childElement]]
+    [[+endElement]]
+    
+</div>

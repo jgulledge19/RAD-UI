@@ -110,8 +110,8 @@ $(function() {
         urlParams: [],
         action: 'getCollection',
         limit: 5000,
-        sortCol: 'last_name',
-        sortDir: 'ASC',
+        sortCol: '[[+sortCol]]',
+        sortDir: '[[+sortDir]]',
     };
     
     var columns = []; 
@@ -158,6 +158,9 @@ $(function() {
         });
         */
         loader = new Slick.Data.JsonModel(ajaxOptions);
+        if ( ajaxOptions.sortCol != '' ) {
+            loader.setSort(ajaxOptions.sortCol, ajaxOptions.sortDir );
+        }
     });    
     
     /**

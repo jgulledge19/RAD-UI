@@ -125,8 +125,8 @@ class Crud {
         $isLimit = !empty($_REQUEST['limit']);
         $start = $this->modx->getOption('start',$_REQUEST,0);
         $limit = $this->modx->getOption('limit',$_REQUEST,999999);
-        $sort = $this->modx->getOption('sort',$_REQUEST,'id');
-        $dir = $this->modx->getOption('dir',$_REQUEST,'DESC');
+        $sort = $this->modx->getOption('sortCol',$_REQUEST,$this->modx->getOption('sort',$_REQUEST,'id') );
+        $dir = $this->modx->getOption('sortDir',$_REQUEST, $this->modx->getOption('dir',$_REQUEST,'DESC') );
         $query = $this->modx->getOption('query',$_REQUEST,'');// search
         
         //print_r($this->config);
@@ -275,7 +275,7 @@ class Crud {
             if ( empty($item) ) {
                 $status = 'failed';
                 $message = 'Item not found';
-                $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/create()] Error finding item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
+                $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/update()] Error finding item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
             } else if ( $this->validate() ) {
                 
                 $item->fromArray($this->inputData);
@@ -283,7 +283,7 @@ class Crud {
                 $item = $this->setUpdateDefaults($item);
                 
                 if ($item->save()) {
-                    $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/create()] Updated item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
+                    $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/update()] Updated item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
                     if ( $this->updateDependants($item) ) {
                         $status = 'success';
                         $message = 'Updated record';
@@ -292,7 +292,7 @@ class Crud {
                         $message = 'Dependants where not updated';
                     }
                 } else {
-                    $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/create()] Error updating item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
+                    $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI/Crud/update()] Error updating item in: '.$this->classKey.' on: '.$_SERVER['REQUEST_URI'].' Q: '. $_SERVER['QUERY_STRING'] );
                     $status = 'failed';
                     $message = 'Error updating record, did not save';
                 }

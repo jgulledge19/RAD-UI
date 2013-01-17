@@ -305,7 +305,11 @@ class SlickGrid extends DataGrid {
             'addUrl' => $this->modx->getOption('addUrl', $this->scriptProperties, $dataUrl),
             'editUrl' => $this->modx->getOption('editUrl', $this->scriptProperties, $dataUrl),
             'deleteUrl' => $this->modx->getOption('deleteUrl', $this->scriptProperties, $dataUrl),
-            'importUrl' => $this->modx->getOption('importUrl', $this->scriptProperties, $dataUrl)
+            'importUrl' => $this->modx->getOption('importUrl', $this->scriptProperties, $dataUrl),
+            // ajax options:
+            'sortCol' => $this->modx->getOption('sortCol', $this->scriptProperties, ''),
+            'sortDir' => $this->modx->getOption('sortDir', $this->scriptProperties, 'DESC'),
+            
         );
         $placeholders = array_merge($this->scriptProperties, $placeholders);
         // &toArray - list of availabe properties and placeholders?

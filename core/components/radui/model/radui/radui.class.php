@@ -28,6 +28,11 @@ class RadUi {
     public $chart;
     
     /**
+     * 
+     */
+    protected $config = array();
+    
+    /**
      * @param (Boolean) $hasBuiltChart
      */
     protected $hasBuiltChart = FALSE;
@@ -49,8 +54,10 @@ class RadUi {
             'basePath' => $basePath,
             'corePath' => $basePath,
             'modelPath' => $basePath.'model/',
+            'raduiPath' => $basePath.'model/radui/',
             'processorsPath' => $basePath.'processors/',
             'templatesPath' => $basePath.'templates/',
+            'snippetsPath' => $basePath.'elements/snippets/',
             'chunksPath' => $basePath.'elements/chunks/',
             'jsUrl' => $assetsUrl.'js/',
             'cssUrl' => $assetsUrl.'css/',
@@ -63,7 +70,7 @@ class RadUi {
 
         $this->modx->lexicon->load('radui:default');
     }
-
+    
     /**
      * Initializes the class into the proper context
      *
@@ -86,7 +93,7 @@ class RadUi {
     }
     /**
      * @param (String) NULL or String(Key)- Null returns array, string returns value
-     * @return (Mixed) Array/String
+     * @return (Mixed) Array/String if key is empty then the config array, if key is set then the value 
      */
     public function getConfig($key=NULL) {
         if ( empty($key) ) {
@@ -97,6 +104,7 @@ class RadUi {
         }
         return NULL;
     }
+    
     /**
      * Set the debug value
      * @param (Boolean) $debug
@@ -113,7 +121,7 @@ class RadUi {
     public function loadGrid($scriptProperties) {
         $gridName = $this->modx->getOption('grid', $scriptProperties, 'SlickGrid');
         
-        if ($this->modx->loadClass($gridName,$this->config['corePath'],true,true)) {
+        if ($this->modx->loadClass($gridName,$this->config['raduiPath'],true,true)) {
             $this->grid = new $gridName($this->modx, $scriptProperties);
             
         } else {
@@ -145,7 +153,7 @@ class RadUi {
             $folder .= '/';
         }
         // $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI] Load '.$crudName.' class in '.$folder.' folder');
-        if ($this->modx->loadClass($crudName,$this->config['corePath'].$folder,true,true)) {
+        if ($this->modx->loadClass($crudName,$this->config['raduiPath'].$folder,true,true)) {
             $this->crud = new $crudName($this->modx, $scriptProperties);
             return $this->crud;
         } else {
@@ -193,7 +201,7 @@ class RadUi {
         if ( !empty($folder) ) {
             $folder .= '/';
         }
-        if ($this->modx->loadClass($tabName,$this->config['corePath'].$folder,true,true)) {
+        if ($this->modx->loadClass($tabName,$this->config['raduiPath'].$folder,true,true)) {
             $this->tabs = new $tabName($this->modx, $scriptProperties);
             return $this->tabs;
         } else {
@@ -244,7 +252,7 @@ class RadUi {
     public function newForm($scriptProperties,$theme='radui') {
         $formsName = $this->modx->getOption('forms', $scriptProperties, 'EasyForms');
         
-        if ($this->modx->loadClass($formsName,$this->config['corePath'],true,true)) {
+        if ($this->modx->loadClass($formsName,$this->config['raduiPath'],true,true)) {
             $this->form = new $formsName($this->modx, $scriptProperties, $theme);
             
         } else {
@@ -260,29 +268,32 @@ class RadUi {
      * @param (Array) $scriptProperties
      */
     public function getRadForm($scriptProperties) {
+        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Start ' );
         $form_id = $this->modx->getOption('formID', $scriptProperties, 0);
-        $criteria = array('id' => $form_id);
+        $criteria = $form_id;
         if ( $form_id == 0 ){
             $form_name = $this->modx->getOption('formName', $scriptProperties, '');
             $criteria = array('name' => $form_name);
         }
+        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Build Criteria ' );
         // get form db object
         $radForm = $this->modx->getObject('RadForm', $criteria );
+        // $radForm->get('id');
         if ( !is_object($radForm) ) {
             $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Could not find the form '.print_r($criteria,TRUE) );
             return 'The form was not found';
         }
         
         // load the form engine
-        $formEngine = $radForm->get('class_key');
-        if ( $this->modx->loadClass($formEngine, $this->config['corePath'], true, true) ) {
+        $formEngine = $radForm->get('classkey');
+        if ( $this->modx->loadClass($formEngine, $this->config['raduiPath'], true, true) ) {
             $options = json_decode($radForm->get('options'), TRUE);
-            $this->form = new $formEngine($this->modx, $options, $radForm->get('theme'));
+            $this->form = new $formEngine($this->modx, $scriptProperties, $radForm->get('theme'));
         } else {
-            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Could not load the '.$formEngine.' class.');
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Could not load the '.$formEngine.' class. Path: '.$this->config['modelPath']);
             return 'The form engine '.$formEngine.' was not found';
         }
-        
+        return $this->form->loadEngine($radForm, $scriptProperties);
         
     }
 }

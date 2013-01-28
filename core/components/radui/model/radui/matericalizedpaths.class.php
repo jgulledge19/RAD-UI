@@ -35,6 +35,11 @@ class MaterializedPaths {
     protected $branch_data = array();
     
     /**
+     * 
+     */
+    public $debug = false;
+    
+    /**
      * the modx object
      */
     public $modx;
@@ -72,7 +77,7 @@ class MaterializedPaths {
      * @param (String) $return_type - (PDO) fetch, (PDO) query, (xPDO) getCollection, (xPDO) getIterator
      * @return (Array) $data | (Object) $data
      */
-    public function getTree($criteria=array(), $depth=0, $return_type='fetch') {
+    public function getTree($criteria=array(), $depth=0, $return_type='query') {
         return $this->getBranch(0, $criteria, $depth, $return_type);
     }
     
@@ -85,7 +90,7 @@ class MaterializedPaths {
      * @param (String) $return_type - (PDO) fetch, (PDO) query, (xPDO) getCollection, (xPDO) getIterator
      * @return (Array) $data | (Object) $data
      */
-    public function getBranch($id, $criteria, $depth=0, $return_type='fetch') {
+    public function getBranch($id, $criteria, $depth=0, $return_type='query') {
         /**
          * SELECT * FROM modx_rad_form_elements 
             WHERE
@@ -109,9 +114,10 @@ class MaterializedPaths {
         $form_id = $criteria['form_id'];
         if ( isset($criteria['getBranchAnwers']) ) {
             $sql = 'SELECT `a`.*,  `e`.`name`, `e`.`html_id` FROM modx_rad_form_elements AS e 
-            JOIN modx_rad_form_answers AS a
+            JOIN modx_rad_form_answers AS a ON a.element_id = e.id
             WHERE 
                 a.instance_id = '.( (int) $criteria['instance_id']).' AND
+                e.group_element_id = 0 AND 
                 ';
         } else {
             $sql = 'SELECT * FROM modx_rad_form_elements 
@@ -139,6 +145,7 @@ class MaterializedPaths {
         $sql .= '
             ORDER BY path ASC';
         
+        // $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->MaterializedPaths] SQL: '.$sql);
         switch ($return_type) {
             case 'getCollection':
                 $data = $this->modx->getCollection($this->config['object'], $criteria);
@@ -149,13 +156,14 @@ class MaterializedPaths {
             case 'sql':
                 $sql;
                 break;
-            case 'query':
-                $data = $this->modx->query($sql);
-                break;
             case 'fetch':
-            default:
                 $stmt = $this->modx->query($sql);
                 $data = $stmt->fetch(PDO::FETCH_ASSOC);
+                break;
+            case 'query':
+                // no break
+            default:
+                $data = $this->modx->query($sql);
                 break;
         }
         return $data;
@@ -180,7 +188,7 @@ class MaterializedPaths {
      * @param (String) $return_type - (PDO) fetch, (PDO) query, (xPDO) getCollection, (xPDO) getIterator
      * @return (Array) $data | (Object) $data
      */
-    public function getBranchAnswers($id, $criteria, $depth=0, $return_type='fetch') {
+    public function getBranchAnswers($id, $criteria, $depth=0, $return_type='query') {
         /**
          * SELECT a.*  FROM modx_rad_form_elements AS e 
             JOIN modx_rad_form_answers AS a
@@ -203,9 +211,53 @@ class MaterializedPaths {
      */
     
     /**
+     * Will get the entire tree and all child nodes
+     * 
+     * @param (Array) $cretria - xPDO criteria
+     * @param (INT) $depth - how deep to go, default is 0 meaning infinite
+     * @param (String) $parent_path
+     * @return (Array) $data | (Object) $data
+     */
+    public function buildTree($criteria=array(), $depth=0, $parent_path=NULL)
+    {
+        $this->buildBranch(0, $criteria, 0);
+    }
+    /**
      * 
      */
-    public function buildBranch($id, $depth=0) {
+    public function buildBranch($parent_id, $criteria=array(), $parent_depth=0, $parent_path=NULL)
+    {
+        
+        $form_id = $criteria['form_id'];
+        // get all children:
+        $c = $this->modx->newQuery('RadFormElements', array('form_id' => $form_id, 'parent_id' => $parent_id));
+        $c->sortby('rank', 'ASC');
+        $elements = $this->modx->getIterator('RadFormElements', $c); // $radForm->getMany('Elements', $c );
+        $c->prepare();
+        if ( $this->debug ) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->MaterializedPaths->buildBranch] SQL: '.$c->toSql());
+        }
+        if ( is_object($elements) ) {
+            if ( $this->debug ){ 
+                $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->MaterializedPaths->buildBranch] Object loaded start loop for: '.$parent_id );
+            }
+            $rank = 1;// always start with 1
+            foreach ( $elements as $element ) {
+                // build path:
+                //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->MaterializedPaths] E ID: '.$element->get('id') );
+                $my_depth = $parent_depth + 1;
+                $my_path = '';
+                if ( !empty($parent_path) ) {
+                    $my_path = $parent_path.'.';
+                }
+                $my_path .= str_pad($rank, 3, "0", STR_PAD_LEFT);// makes 001
+                $element->set('rank', $rank++);
+                $element->set('path', $my_path);
+                $element->set('depth', $my_depth);
+                $element->save();
+                $this->buildBranch($element->get('id'), array('form_id' => $form_id), $my_depth, $my_path);
+            }
+        }
         
     }
     

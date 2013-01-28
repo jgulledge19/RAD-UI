@@ -11,7 +11,7 @@
 		<field key="use_pages" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
 		<field key="type" dbtype="varchar" precision="32" phptype="string" null="false" default="data-collection" />
 		<field key="theme" dbtype="varchar" precision="64" phptype="string" null="true" default="radui" />
-		<field key="class_key" dbtype="varchar" precision="64" phptype="string" null="true" default="EasyForms" />
+		<field key="classkey" dbtype="varchar" precision="64" phptype="string" null="true" default="EasyForms" />
 		<field key="create_time" dbtype="datetime" phptype="datetime" null="false" />
 		<field key="update_time" dbtype="datetime" phptype="datetime" null="true" />
 		<field key="open_time" dbtype="datetime" phptype="datetime" null="true" />
@@ -43,7 +43,7 @@
         <composite alias="Filters" class="RadFormFilters" local="id" foreign="element_id" cardinality="many" owner="local" />
         
 		<field key="form_id" dbtype="int" precision="11" phptype="integer" null="false" index="index" />
-		<field key="parent" dbtype="int" precision="11" phptype="integer" null="fasle" default="0" />
+		<field key="parent_id" dbtype="int" precision="11" phptype="integer" null="false" default="0" />
 		<field key="depth" dbtype="int" precision="3" phptype="integer" null="false" default="0" />
         <field key="path" dbtype="varchar" precision="255" phptype="string" null="false" default="/" />
         <field key="rank" dbtype="int" precision="4" phptype="integer" null="true" default="0" />
@@ -51,6 +51,7 @@
 		<field key="text" dbtype="text" phptype="string" null="true" />
 		<field key="description" dbtype="text" phptype="string" null="true" />
 		<field key="name" dbtype="varchar" precision="64" phptype="string" null="true" />
+        <field key="group_element_id" dbtype="int" precision="11" phptype="integer" null="true" default="0" />
 		<field key="html_id" dbtype="varchar" precision="64" phptype="string" null="true" />
 		<field key="default_value" dbtype="text" phptype="string" null="true" />
 		<field key="config" dbtype="text" phptype="string" null="true" />
@@ -59,6 +60,8 @@
 		<field key="table_field" dbtype="varchar" precision="64" phptype="string" null="true" />
 		<field key="validation_rules" dbtype="text" phptype="string" null="true" />
 		<field key="active" dbtype="tinyint" precision="1" phptype="integer" null="true" default="1" />
+        <field key="create_time" dbtype="datetime" phptype="datetime" null="false" />
+        <field key="update_time" dbtype="datetime" phptype="datetime" null="true" />
 
 		<index alias="PageCreate" name="PageCreate" primary="false" unique="false" type="BTREE" >
 			<column key="form_id" length="" collation="A" null="false" />

@@ -7,7 +7,7 @@ $xpdo_meta_map['RadFormElements']= array (
   'fields' => 
   array (
     'form_id' => NULL,
-    'parent' => 0,
+    'parent_id' => 0,
     'depth' => 0,
     'path' => '/',
     'rank' => 0,
@@ -15,6 +15,7 @@ $xpdo_meta_map['RadFormElements']= array (
     'text' => NULL,
     'description' => NULL,
     'name' => NULL,
+    'group_element_id' => 0,
     'html_id' => NULL,
     'default_value' => NULL,
     'config' => NULL,
@@ -23,6 +24,8 @@ $xpdo_meta_map['RadFormElements']= array (
     'table_field' => NULL,
     'validation_rules' => NULL,
     'active' => 1,
+    'create_time' => NULL,
+    'update_time' => NULL,
   ),
   'fieldMeta' => 
   array (
@@ -34,12 +37,12 @@ $xpdo_meta_map['RadFormElements']= array (
       'null' => false,
       'index' => 'index',
     ),
-    'parent' => 
+    'parent_id' => 
     array (
       'dbtype' => 'int',
       'precision' => '11',
       'phptype' => 'integer',
-      'null' => true,
+      'null' => false,
       'default' => 0,
     ),
     'depth' => 
@@ -91,6 +94,14 @@ $xpdo_meta_map['RadFormElements']= array (
       'precision' => '64',
       'phptype' => 'string',
       'null' => true,
+    ),
+    'group_element_id' => 
+    array (
+      'dbtype' => 'int',
+      'precision' => '11',
+      'phptype' => 'integer',
+      'null' => true,
+      'default' => 0,
     ),
     'html_id' => 
     array (
@@ -145,6 +156,18 @@ $xpdo_meta_map['RadFormElements']= array (
       'phptype' => 'integer',
       'null' => true,
       'default' => 1,
+    ),
+    'create_time' => 
+    array (
+      'dbtype' => 'datetime',
+      'phptype' => 'datetime',
+      'null' => false,
+    ),
+    'update_time' => 
+    array (
+      'dbtype' => 'datetime',
+      'phptype' => 'datetime',
+      'null' => true,
     ),
   ),
   'indexes' => 

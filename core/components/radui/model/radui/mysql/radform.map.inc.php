@@ -13,7 +13,7 @@ $xpdo_meta_map['RadForm']= array (
     'use_pages' => 1,
     'type' => 'data-collection',
     'theme' => 'radui',
-    'class_key' => 'EasyForms',
+    'classkey' => 'EasyForms',
     'create_time' => NULL,
     'update_time' => NULL,
     'open_time' => NULL,
@@ -78,7 +78,7 @@ $xpdo_meta_map['RadForm']= array (
       'null' => true,
       'default' => 'radui',
     ),
-    'class_key' => 
+    'classkey' => 
     array (
       'dbtype' => 'varchar',
       'precision' => '64',

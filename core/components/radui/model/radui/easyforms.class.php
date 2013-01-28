@@ -123,6 +123,10 @@ class EasyForms {
     protected $has_errors = FALSE;
     
     /**
+     * @param (Object MaterializedPaths) $paths
+     */
+    public $paths = NULL;//  $this->paths = new MaterializedPaths
+    /**
      * the modx object
      */
     public $modx;
@@ -293,7 +297,7 @@ class EasyForms {
         $config['elementType'] = 'multiContainer';
         $config['name'] = $fieldName;
         // $config['element'] = $element;
-        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->addMultiContainer] - set multiLevels - '.$config['multiLevel'] );
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->addMultiContainer] - set multiLevels - '.@$config['multiLevel'] );
         if ( !isset($config['multiLevel']) || !is_int($config['multiLevel']) ) {
             $config['multiLevel'] = 1;
             $config['value'] = 1;
@@ -308,7 +312,7 @@ class EasyForms {
         );
         $config = array_merge($defaults, $config);
         
-        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->addMultiContainer] - default multiLevels - '.$config['multiLevel'] );
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->addMultiContainer] - default multiLevels - '.$config['multiLevel'] );
         return $this->addElement($id, $config);
     }
         
@@ -498,6 +502,7 @@ class EasyForms {
      */
     public function render($loadJS=TRUE, $loadCSS=TRUE, $loadJQuery=TRUE) {
         // loop through the associated method:
+        //echo $this->printAssociated();
         
         $form_parts = $this->renderElement($this->associated[0]);// start with the heighest level
         $properties = array_merge($this->config,$form_parts);
@@ -559,11 +564,11 @@ class EasyForms {
             
             if ( isset($this->associated[$parent]) ) {
                 // get the children
-                // @TODO Multigroup loops
-                if ( isset($properties['multiLevel']) && $properties['multiLevel'] > 0 ) {
+                // @TODO Multigroup loops set dynamic level and max levels
+                if ( isset($properties['multiLevel']) && $properties['multiLevel'] > 500 ) {
                     $children_html = '';
                     for( $x=1; $x <= $properties['multiLevel']; $x++ ){
-                        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->renderElement] - multiLevels - '.$x);
+                        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->renderElement] - multiLevels - '.$x);
                         // wrap in divs/elements
                         if ( isset($properties['childChunk']) ) {
                             $chunk = $properties['childChunk'];
@@ -576,7 +581,7 @@ class EasyForms {
                             'itemAttr' => ( isset($properties['itemAttr']) ? $properties['itemAttr'] : '')
                         );
                         $itemElement = ''; 
-                        $itemHtml = $this->renderElement($this->associated[$parent], $x, $properties['requireLevel'], $spacing.'  ');
+                        $itemHtml = $this->renderElement($this->associated[$parent], $x, (isset($properties['requireLevel']) ? $properties['requireLevel'] : 0), $spacing.'  ');
                         foreach( $itemHtml as $item => $html ) {
                             $itemElement .= $html;
                         }
@@ -627,8 +632,20 @@ class EasyForms {
                 $properties['label'] = $properties['name']; 
             }
             // set options for selects
-            if ( isset($properties['options']) && is_array($properties['options']) ) {
-                $options = $properties['options'];
+            if ( isset($properties['options'])  ) {
+                if ( is_array($properties['options']) ) {
+                      $options = $properties['options'];
+                } else {
+                    // load common library:
+                    require_once $this->modx->radui->getConfig('raduiPath').'library/commonselectoptions.php';
+                    $tmp =  explode('=>', (string) $properties['options']);
+                    if ( isset($tmp[1]) ) {
+                        // load other user library
+                    }
+                    $options = getCommonSelectOptions($tmp[0]);
+                }
+                
+                
                 $option_str = '';
                 $selected_value = '';
                 if ( isset($this->default_data[$properties['name']]) ) {
@@ -671,13 +688,23 @@ class EasyForms {
             
             // set the value for all hidden, text, textarea on POST/GET 
             if ( isset($properties['name']) && isset($this->default_data[$properties['name']]) && 
-                $properties['elementType'] == 'field' && 
-                ( $properties['element'] == 'textarea' || ($properties['element'] == 'input' && $properties['type'] == 'text' ) ) ) {
+                    $properties['elementType'] == 'field' && 
+                    ( $properties['element'] == 'textarea' || $properties['element'] == 'hidden' || ($properties['element'] == 'input' && 
+                        $properties['type'] != 'radio' && $properties['type'] != 'submit' && $properties['type'] != 'checkbox' 
+                    ) ) 
+                ) {
                 $properties['value'] = $this->default_data[$properties['name']];
+                // $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->renderElement] Set Default Value: '.$properties['value'] );
             }
+            //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->renderElement] Name: '.@$properties['name'].' Default Value: '.@$this->default_data[$properties['name']] );
+            if ( isset($properties['name']) && $properties['name'] == 'page_number' ) {
+                //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->renderElement] Name: '.@$properties['name'].' Default Value: '.@$this->default_data[$properties['name']] );
+                //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->renderElement] D: '.print_r($properties, true) );
+            }
+            
             // set basic properties to empty/null - this to to reduce processing and pushed down placeholders
             $empty_data = array(
-                     'containterID' => '',
+                     'containerID' => '',
                      'containerClass' => '',
                      'containerAttr' => '',
                      
@@ -703,11 +730,49 @@ class EasyForms {
                      'sequence' => '',
                      'placeAfter' => '',
                      'placeBefore' => '',
+                     'error' => 0
                 );
             $properties = array_merge($empty_data, $properties);
             
-            
-            
+            if ( isset($this->errors[$properties['name']]) ) {
+                $properties['error'] = true;
+            }
+            if ( isset($properties['validation_rules']) && is_array($properties['validation_rules'])) {
+                $attr = '';
+                foreach ( $properties['validation_rules'] as $n => $v ) {
+                    if (empty($v)) {
+                        continue;
+                    }
+                    switch ($n) {
+                        case 'required':
+                            if ( (boolean) $v ) {
+                                $attr .= ' required="required" ';
+                            }
+                            break;
+                        case 'type':
+                            // h5validation:
+                            $properties['class'] .= ' h5-'.$v;
+                            break;
+                        case 'pattern':
+                            // no break
+                        case 'maxlength':
+                            // no break
+                        case 'min': 
+                            // no break
+                        case 'max':
+                            $attr .= ' '.$n.'="'.$v.'" ';
+                            break;
+                    }
+                }
+                if ( !isset($properties['attr']) ) {
+                    $properties['attr'] = '';
+                }
+                $properties['attr'] = $attr.' '.$properties['attr'];
+            }
+            if ( isset($properties['placeholder']) && !empty($properties['placeholder'])) {
+                $properties['attr'] = ' placeholder="'.$properties['placeholder'].'" '.$properties['attr'];
+            }
+                
             $html = '';
             if ( $properties['elementType'] == 'html' ) {
                 $chunk = $this->modx->newObject('modChunk');
@@ -728,6 +793,7 @@ class EasyForms {
                         $chunk = $this->theme.$properties['elementType'];
                     }
                 }
+                //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->Render] Chunk: '.$chunk.' E: '.$parent );
                 $html = $this->modx->getChunk($chunk, $properties);
             }
             // now add spacing to the lines:
@@ -796,14 +862,18 @@ class EasyForms {
         $page_data = array();
         // get pages: array(rank=>id); 
         $page_rank = 1;
-        $c = $this->modx->newQuery('RadFormElements', array('type' => 'page'));
+        $c = $this->modx->newQuery('RadFormElements', array('type' => 'Page'));
         $c->sortby('rank', 'ASC');
-        $pages = $radForm->getMany('Elements', $c );
-        if ( is_object($pages) ) {
+        $pages = $this->modx->getIterator('RadFormElements', $c); // $radForm->getMany('Elements', $c );
+        $c->prepare();
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements sql] -'.$c->toSql());
+        if ( is_object($pages) ) { 
+            //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements] pages2 -'.print_r($pages->toArray(), TRUE));
             foreach ( $pages as $page ) {
+                //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] Page: '.$page->get('id').' Rank: '. $page->get('rank') );
                 $page_data[$page->get('rank')] = $page->get('id'); 
             }
-        }
+        } // else return failed?
         
         // get user instance:
         $this->instance = null;
@@ -813,7 +883,7 @@ class EasyForms {
             $instance = $radForm->getOne('Instances', array('id' => $_SESSION['rad_form_instance_id'], 'form_status:!=' => 'Void'));
             if ( is_object($instance) ) {
                 $this->instance = &$instance;
-                $_SESSION['instance_id'] = $instance_id = $this->instance->get('id');
+                $_SESSION['rad_form_instance_id'] = $instance_id = $this->instance->get('id');
             }
         } else if ( $this->modx->user->isAuthenticated($this->modx->context->get('key'))  ) {
             // get modx user id and instance
@@ -823,65 +893,90 @@ class EasyForms {
             $instance = $radForm->getOne('Instances', array('user_id' => $uid, 'form_status:!=' => 'Void'));
             if ( is_object($instance) ) {
                 $this->instance = &$instance;
-                $_SESSION['instance_id'] = $instance_id = $this->instance->get('id');
+                $_SESSION['rad_form_instance_id'] = $instance_id = $this->instance->get('id');
             }
         }
         
-        $page_id = 0;
-        $continue = TRUE;
+        $page_rank = 1;
+        $continue = true;
+        
+        $uid = $this->modx->user->get('id');
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements] line: '.__LINE__.' UID: '.$uid);
         
         // @TODO get the events:
-        if ( isset($_POST) ) {
+        if ( isset($_POST['page_number']) ) {
             if ( $instance_id == 0 ) {
                 // make new instance for user
-                $instance = $radForm->newObject('RadFormInstances' );
+                $instance = $this->modx->newObject('RadFormInstances' );
                 if ( is_object($instance) ) {
                     $this->instance = &$instance;
                     $this->instance->set('form_id', $radForm->get('id'));
-                    if ( $this->modx->user->isAuthenticated($this->modx->context->get('key'))  ) {
+                    if ( $this->modx->user->isAuthenticated($this->modx->context->get('key')) || $this->modx->user->isAuthenticated('mgr')  ) {
                         // get modx user id and instance
                         $uid = $this->modx->user->get('id');
                         $this->instance->set('user_id', $uid);
+                        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] Auth User: '.$uid );
                     }
                     $this->instance->set('start_time', date('Y-m-d H:i:s'));
                     // $this->instance->set('crm_id', $radForm->get('id'));// ?
                     if ( !$this->instance->save() ) {
                         // @TODO report error 
+                        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements] Save New Instance Erron on line: '.__LINE__.' E: '.$uid);
                     }
-                    $_SESSION['instance_id'] = $instance_id = $this->instance->get('id');
+                    $_SESSION['rad_form_instance_id'] = $instance_id = $this->instance->get('id');
                 }
             }
-            if ( $pages ) {
+            if ( $pages && isset($_POST['page_number']) && isset($page_data[$_POST['page_number']]) ) {
                 $page_rank = $_POST['page_number'];
                 
             } else {
-                
+                // error!
             }
-            $this->loadElements($radForm, $page_data[$page_rank]);
+            //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] Page#: '.$_POST['page_number']);
+            
+            //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] -'.print_r($page_data, TRUE).' - c: '.current($page_data));
+            $this->loadElements($radForm, (isset($page_data[$page_rank]) ? $page_data[$page_rank] : 0/*current($page_data)*/ ));
             
             $this->loadAnswers($this->instance->get('id'));
             // process and check for errors:
-            $this->process($instance_id);
+            $this->process();//$page_data[$page_rank]/*$instance_id*/);
+            
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] Errors: '.print_r($this->errors, true) );
             if ( $this->has_errors ) {
                 $continue = FALSE;
+                $this->modx->setPlaceholder('raduiErrors', print_r($this->errors, true));//
+                
+                // load default POST data:
+                $this->loadData($_POST);
             } else {
-                $page_rank++;
-                if ( !isset($page_data[$page_rank]) ) {
-                    $page_rank--;
+                if ( isset($page_data[($page_rank+1)]) ) {
+                    $page_rank++;
                 }
             }
-        } 
+        } elseif ( isset($_GET['page_number']) ) {
+            $page_rank = (int) $_GET['page_number'];
+        }
         
         if ( $continue ) {
+            // reset
+            $this->associated = array();
+            $this->elements = array();
+            // load next page
             $this->loadElements($radForm, $page_data[$page_rank]);
             if ( is_object($this->instance) ) {
-                $this->loadAnswers($this->instance->get('id'));
+                
+                $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] LoadAnswers: '.$page_data[$page_rank]);
+                $this->loadAnswers($this->instance->get('id'), $page_data[$page_rank]);
             }
-            // load default data:
-            //$this->loadData($default_data);
+            
             
         }
         
+        $this->setFormValue('page_number', $page_rank);
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] Add page rank: '.$page_rank);
+        
+        $this->addField('page_number', 'page_number_hidden', array('type' => 'hidden', 'element' => 'hidden'));
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadEngine] D Data: '.print_r($this->default_data, true) );
         // render - add page_number and instanceID(modx user id) as hidden/cookies
         return $this->render();
     }
@@ -891,20 +986,24 @@ class EasyForms {
      * @param (Boolean) $load_defaults
      * 
      */
-    public function loadAnswers($instance_id, $page_id=0, $load_default=TRUE) {
+    public function loadAnswers($instance_id, $page_id=0, $load_default=true) {
         if ( !is_object($this->paths) ){
             $this->paths = new MaterializedPaths($this->modx, $config=array() );
         }
         $default_data = array();
-        $fetch_answers = $this->paths->getBranchAnswers($page_id, $criteria=array('instance_id' => $instance_id ) );
-        foreach ( $fetch_answers as $answer ) {
-            if ( $answer['rank'] > 1 ) { 
-                $answer['name'] .= $answer['rank'];
-                $answer['html_id'] .= $answer['rank'];// html id not DB id
+        $fetch_answers = $this->paths->getBranchAnswers($page_id, $criteria=array('instance_id' => $instance_id, 'form_id' => $this->instance->get('form_id') ) );
+        if ( is_object($fetch_answers) ) {
+            while ( $answer = $fetch_answers->fetch(PDO::FETCH_ASSOC) ) {
+            // foreach ( $fetch_answers as $answer ) {
+                //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadAnswers] N: '.$answer['name'].' A: '.$answer['value']);
+                if ( $answer['rank'] > 1 ) { 
+                    $answer['name'] .= $answer['rank'];
+                    $answer['html_id'] .= $answer['rank'];// html id not DB id
+                }
+                $this->answers[$answer['html_id']] = $answer;
+                // default data
+                $default_data[$answer['name']] = $answer['value'];
             }
-            $this->answers[$answer['html_id']] = $answer;
-            // default data
-            $default_data[$answer['name']] = $answer['value'];
         }
         if ( $load_default ) {
             $this->loadData($default_data);
@@ -916,7 +1015,7 @@ class EasyForms {
      * Load DB objects elements into class
      * @param (xPDO Object) $radForm
      * @param (Int) $branch_id or $page_id
-     * //@ param (Array) $properties - name=>value
+     * @param (Array) $properties - name=>value
      * @return (String) $html - the rendered/processed form
      */
     public function loadElements( &$radForm, $branch_id/*, $properties*/ ) {
@@ -930,12 +1029,15 @@ class EasyForms {
         if ( !is_object($this->paths) ){
             $this->paths = new MaterializedPaths($this->modx, $config=array() );
         }
+        
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements] Branch: '.$branch_id);
         if ( $branch_id == 0 ) {
-            $elements = $this->paths->getTree($criteria=array('form_id' => $radForm->get('id') ) );
+            $elements = $this->paths->getTree(array('form_id' => $radForm->get('id') ) );
         } else {
-            $elements = $this->paths->getBranch($branch_id, $criteria=array('form_id' => $radForm->get('id') ) );
+            $elements = $this->paths->getBranch($branch_id, array('form_id' => $radForm->get('id') ) );
             
         }
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements] -'.print_r($elements, TRUE));
         // elements are now in order so I don't need this here:
         /*
         foreach ( $elements as $element ) {
@@ -950,8 +1052,19 @@ class EasyForms {
                 $name_to_id[$element->get('name')] = $element->get('id');
             }
         */
+        
+        $this->setForm('method', 'post');
+        $this->setForm('action', '[[~[[*id]]]]');
+        
+        $x = 0;
         // load elements
-        foreach ( $elements as $element ) {
+        while ( $element = $elements->fetch(PDO::FETCH_ASSOC) ) {
+            if ( $x++ > 100 ) {
+               // break;
+            }
+        //foreach ( $elements as $element ) {
+            //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements - foreach element] -'.print_r($element, TRUE));
+            
             $id_to_element[$element['id']] = $element['html_id'];
             $name_to_id[$element['name']] = $element['id'];
             
@@ -959,19 +1072,24 @@ class EasyForms {
             $config = json_decode($element['config'], TRUE);
             $config['validation_rules'] = json_decode($element['validation_rules'], TRUE);
             
-            if ( isset($element['parent']) && isset($id_to_element[$element['parent']]) ){
-                $config['parent'] = $id_to_element[$element['parent']];// gets the html id
+            if ( isset($element['parent_id']) && isset($id_to_element[$element['parent_id']]) ){
+                $config['parent'] = $id_to_element[$element['parent_id']];// gets the html id
+            } else {
+                $config['parent'] = 0;// set for the first element
             }
             if ( isset($element['description']) ) {
                 $config['description'] = $element['description'];
+            }
+            if ( !empty($element['default_value']) ) {
+                $config['value'] = $element['default_value'];
             }
             unset($element['validation_rules']);
             unset($element['config']);
             unset($config['id']);// reserved for the DB object
             
             $config = array_merge($element, $config);
-            
-            switch( $type) {
+            //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->loadElements] Add: '.$element['type'].' T: '.@$config['type']. ' P: '.$element['parent_id'].' Name: '.$element['name']. ' T: '.$element['text'].' ID: '.$element['html_id']);
+            switch( $element['type'] ) {
                 
                 /**
                  * Add a tab 
@@ -990,7 +1108,7 @@ class EasyForms {
                  */
                 case 'Container': //($element='ul', $id, $config=array()) {
                     $this->addContainer($element['text'], $element['html_id'], $config);
-                    
+                    break; 
                 /**
                  * Create a field set - just adds config specific info
                  * @param (string) $legend
@@ -999,7 +1117,7 @@ class EasyForms {
                  */
                 case 'Fieldset': // ($legend, $id, $config=array()) {
                     $this->addFieldset($element['text'], $element['html_id'], $config);
-                     
+                    break;
                 /**
                  * Add form field - input, textarea, select, ect..
                  * @param (string) $fieldName - the name of the form element
@@ -1011,7 +1129,7 @@ class EasyForms {
                         $config['label'] = $element['text'];
                     } 
                     $this->addField($element['name'], $element['html_id'], $config);
-        
+                    break;
                 /**
                  * Add custom HTML 
                  * maybe the element? then the innerHtml?  so they can be turned on/off
@@ -1021,6 +1139,7 @@ class EasyForms {
                  */
                 case 'Html'://($html, $id, $config=array()) {
                     $this->addHtml($element['text'], $element['html_id'], $config);
+                    break;
                 /**
                  * Add Submit input field 
                  * @param (string) $fieldName - the name of the form element
@@ -1029,6 +1148,7 @@ class EasyForms {
                  */
                 case 'Submit': //($fieldName, $id, $config=array()) {
                     $this->addSubmit($element['name'], $element['html_id'], $config);
+                    break;
                     
                 /**
                  * Add Button 
@@ -1038,6 +1158,7 @@ class EasyForms {
                  */
                 case 'Button'://($fieldName, $id, $config=array()) {    // elementType;
                     $this->addButton($element['name'], $element['html_id'], $config);
+                    break;
                 /**
                  * Create a Multi Container - a group of child elements that can be dynamically added
                  * @param (string) $fieldName - the name of the hidden form element that will keep count
@@ -1046,6 +1167,7 @@ class EasyForms {
                  */
                 case 'MultiContainer': //($fieldName, $id, $config=array()) {
                     $this->addMultiContainer($element['name'], $element['html_id'], $config);
+                    break;
                 /**
                  * Add an html element to the form
                  * @param (string) $id - the value for the HTML id attribute 
@@ -1066,16 +1188,20 @@ class EasyForms {
      * @param (Int) $page - the current page
      * @return (Boolean)
      */
-    public function process($depth=0, $instance_id) {
+    public function process($depth=0/*, $instance_id*/) {
         // loop through the associated method:
         $this->modx->beginTransaction();
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->process] Depth: '.$depth.' A: '.print_r($this->associated[$depth], true));
+        $this->has_errors = false;
         $this->processElement($this->associated[$depth]);
         if ( $this->has_errors ) {
             // errors happended:
             $this->modx->rollback();
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->process] Rollback');
             return FALSE;
         } else {
             $this->modx->commit();
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->process] Commit');
             return TRUE;
         }
     }
@@ -1104,13 +1230,16 @@ class EasyForms {
      */
     protected function processElement($parents, $multiLevel=0, $requireLevel=0) {
         $children = array();
-        
+        //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->processElement] P: '.print_r($parents, true));
         foreach ( $parents as $parent ) {
+            
             if ( isset($this->remove_elements[$parent])) {
                 // continue;??
             }
             $properties = $this->elements[$parent];// this is the current elements data
             // if $multiLevel is greater then 0 make the name like formname[] and htmlID#  default value is associated by # or rank
+            
+            //$this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->processElement] EL: '.@$properties['name'].' ID: '.$properties['id'] );
             
             if ( isset($this->associated[$parent]) ) {
                 // get the children
@@ -1127,7 +1256,7 @@ class EasyForms {
                 
             }
             if ( $properties['elementType'] != 'field' ) {
-                return;
+                continue;
             }
             /**
              * elementType:
@@ -1162,25 +1291,29 @@ class EasyForms {
                 
                 // @TODO: file uploads
                 
-                if ($this->validate($properties['name'], $properties['element'], $properties['validation_rules'])) {
-                    $this->has_errors = TRUE;
-                    return FALSE;
-                } else if (isset($this->answers[$properties['elementID']]) || !empty($_POST[$properties['name']]) ) {
+                if ( !$this->validate($properties['name'], /*$properties['element'],*/ $properties['validation_rules'])) {
+                    // did not validate
+                    $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->EasyForms()->processElement] Break loop return false');
+                    $this->has_errors = true;
+                    continue;
+                    // return FALSE;
+                } elseif ( $properties['group_element_id'] == 0 && ( isset($this->answers[$properties['elementID']]) || ( isset($_POST[$properties['name']]) && !empty($_POST[$properties['name']]) ) ) ) {
                     // save to db:
+                    // $this->answers[$answer['html_id']] = $answer;
                     if ( isset($this->answers[$properties['elementID']]) ) {
                         // update existing object:
-                        $answer = $this->modx->newObject('RadFormAnswers', array('id' => $this->answers[$properties['elementID']]['id']));
+                        $answer = $this->modx->getObject('RadFormAnswers', array('id' => $this->answers[$properties['elementID']]['id']));
                     } else {
                         // new object:
                         $answer = $this->modx->newObject('RadFormAnswers');
                     }
                     $save_data = array(
-                        'instance_id' => $instance_id,
+                        'instance_id' => $this->instance->get('id'),
                         'element_id' => $properties['id'],
                         'rank' => $multiLevel,
                         'value' => $_POST[$properties['name']],
                     );
-                    $answer->set();
+                    $answer->fromArray($save_data);
                     $answer->save();
                 }
             }
@@ -1193,21 +1326,21 @@ class EasyForms {
     /** 
      * validate user input
      * @param (Mixed) $input: variable to be validated
-     * @param (String) $type: alpha, numeric, alnum, email, url 
      * @param (Array) $config: array of HTML5 attributes=>value
      * 
      * @TODO Use or extend xPDO Validation
-     * 
+     * @return (Boolean) true on success
      */
-    protected function validate($name, $type, $config=array() ) { //  $type, $len = null, $chars = null) {
+    protected function validate($name, $config=array() ) { //  $type, $len = null, $chars = null) {
         $value = null;
         if ( isset($_POST[$name]) ) {
             $value = $_POST[$name];
         }
         
-        if ( isset($config['required'])  && empty($value) ) {
+        if ( isset($config['required']) && (boolean) $config['required'] === true  && empty($value) ) {
             // set error message:
             $this->errors[$name] = 'Required';
+            $this->has_errors = true;
             return FALSE;
         } else if ( empty($value) ) {
             return TRUE;
@@ -1223,11 +1356,12 @@ class EasyForms {
          *  
          */
         // 
-        if ( isset($config['pattern']) ) {
+        if ( isset($config['pattern']) && !empty($config['pattern']) ) {
             // http://stackoverflow.com/questions/10993451/filter-var-using-filter-validate-regexp
             // set error message: 
             if ( filter_var($value, FILTER_VALIDATE_REGEXP, array("options" => array( "regexp" => $config['pattern'] ) ) ) ) {
                 $this->errors[$name] = 'Pattern does not match';
+                $this->has_errors = true;
                 return FALSE;
             }
         }
@@ -1235,19 +1369,22 @@ class EasyForms {
         if ( isset($config['maxlength']) && is_numeric($config['maxlength']) ) {
             if ( strlen($value) > $config['maxlength']) {
                 $this->errors[$name] = 'Exceeds maxlength';
+                $this->has_errors = true;
                 return FALSE;
             }
         }
         // numbers only
-        if ( isset($config['min']) ) {
+        if ( isset($config['min']) && $config['min'] >= 0) {
             if ( $value < $config['min']) {
                 $this->errors[$name] = 'Value to small';
+                $this->has_errors = true;
                 return FALSE;
             }
         }
-        if ( isset($config['max']) ) {
+        if ( isset($config['max']) && $config['max'] > 0 ) {
             if ( $value > $config['max']) {
                 $this->errors[$name] = 'Exceeds max value';
+                $this->has_errors = true;
                 return FALSE;
             }
         }
@@ -1256,30 +1393,38 @@ class EasyForms {
                 case 'alpha':
                     if (!ctype_alpha($value)) { //  [A-Za-z]
                         $this->errors[$name] = 'Only alphabetic characters';
+                        $this->has_errors = true;
                         return FALSE;
                     }
                     break;
-                case 'numeric': // INT
+                case 'number': // INT
+                    // no break
+                    // @TODO make this match jQuery h5validation
+                case 'integer':
                     if (!ctype_digit($value)) {
                         $this->errors[$name] = 'Not a valid whole number';
+                        $this->has_errors = true;
                         return FALSE;
                     }
                     break;
-                case 'alnum':
+                case 'alphaNumeric':
                     if (!ctype_alnum($value)) {
                         $this->errors[$name] = 'Only alphanumeric characters';
+                        $this->has_errors = true;
                         return FALSE;
                     }
                     break;
                 case 'email':
                     if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
                         $this->errors[$name] = 'Invalid email address';
+                        $this->has_errors = true;
                         return FALSE;
                     }
                     break;
                 case 'url':
                     if(!filter_var($value, FILTER_VALIDATE_URL)) {
                         $this->errors[$name] = 'Invalid URL';
+                        $this->has_errors = true;
                         return FALSE;
                     }
                     break;

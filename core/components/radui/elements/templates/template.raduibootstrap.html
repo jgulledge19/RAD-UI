@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+
+    <!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame
+    Remove this if you use the .htaccess -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+    <title>[[*longtitle]]</title>
+
+    <meta name="viewport" content="width=device-width; initial-scale=1.0" />
+
+    <!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -- >
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    -->
+     <!-- Bootstrap -->
+    <link href="[[++asset_url:empty=`/assets`]]/components/radui/templates/bootstrap/jasny/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    
+    
+    
+    <base href="[[!++site_url]]" />
+        
+       
+    <link href="[[++asset_url:empty=`/assets`]]/components/radui/templates/bootstrap/jasny/css/bootstrap-responsive.css" rel="stylesheet">
+    <!-- 
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    -->
+    <script src="[[++asset_url:empty=`/assets`]]/components/radui/js/jquery/jquery-1.8.3.min.js"></script>
+    <style type="text/css" media="screen">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+        .span-block {
+            /* help-block */
+            display:block;
+        }
+        .div-inline {
+            /* help-inline */
+            display: inline;
+        }
+        /* Make errors stand out: */
+        .error label, .error .help-block, .error .help-inline {
+            color: #B94A48;
+        }
+        .error input, .error select, .error textarea,
+        input.error, select.error, textarea.error {
+            border-color: #B94A48;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+        }
+        .error .checkbox, .error .radio, .error input, .error select, .error textarea {
+            color: #B94A48;
+        }
+    </style>
+    <script src="[[++asset_url:empty=`/assets`]]/components/radui/templates/bootstrap/jasny/js/bootstrap.min.js"></script>
+    <!-- 
+    <script src="[[++asset_url:empty=`/assets`]]/components/radui/templates/bootstrap/jasny/bootstrap-inputmask.js"></script>
+    -->
+    
+    <script src="[[++asset_url:empty=`/assets`]]/components/radui/js/h5validate/jquery.h5validate.js"></script>
+    <script>
+        $(document).ready(function() {
+            // $('input').tooltip();
+            //$('input').inputmask();
+        });
+        // http://stackoverflow.com/questions/8439490/how-to-use-twitter-bootstrap-popovers-for-jquery-validation-notifications
+        // http://blog.staffannoteberg.com/2012/03/01/html5-form-validation-with-regex/
+        // http://html5pattern.com/
+        
+        $(document).ready(function () {
+            $('form').h5Validate();
+        });
+    </script>
+
+
+</script>
+    [[*embed-css]]
+    [[*embed-js]]
+</head>
+<body lang="en">
+    
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand" href="[[~[[*id]]]]#">RAD-UI Form Example</a>
+                <div class="nav-collapse collapse">
+                    <ul class="nav">
+                      <li class="active"><a href="[[~[[*id]]]]#">Home</a></li>
+                      <li><a href="[[~[[*id]]]]#about">About</a></li>
+                      <li><a href="[[~[[*id]]]]#contact">Contact</a></li>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+      <div class="row">
+        <div class="span3">
+          <div class="well sidebar-nav">
+            <ul class="nav nav-list">
+                [[!Wayfinder?
+                    &startId=`2094`
+                    &displayStart=`true`
+                    &fullLink=`true`
+                    &level=`2`
+                    &startItemTpl=`rad_startItemTpl`
+                    &outerTpl=`bc7wfOuterTpl`
+                    &parentRowHereTpl=`wf_parentRowHereTpl`
+                    &activeParentRowTpl=`wf_parentRowHereTpl`
+                    &parentRowTpl=`wf_parentRowTpl`
+                    &selfClass=`current`
+                       &rowClass=`select`
+                       &rowTpl=`rad_rowTpl`
+                    &lastClass=`end`
+                ]]
+              
+            </ul>
+          </div><!--/.well -->
+        </div><!--/span-->
+        <div class="span9">
+            <div class="row-fuild">
+                [[*content]]
+            </div>
+        </div><!--/span-->
+      </div><!--/row-->
+
+      <hr>
+
+      <div>
+        <p>&copy; Company 2012</p>
+      </div>
+
+    </div><!--/.fluid-container-->
+    
+    
+    
+    
+    
+    
+    
+<!-- 
+    <div id="footer" class="navbar navbar-fixed-bottom">
+         <div class="navbar-inner">
+            <div class="container">
+                <a href="http://joshua19media.com">RAD-UI</a> &ndash; runs on <a href="http://modx.com">MODX</a>
+            </div>
+        </div>
+    </div>
+-->
+</body>
+</html>

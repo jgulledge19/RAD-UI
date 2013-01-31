@@ -1,0 +1,29 @@
+<div id="[[+containterID]]" class="[[+containerClass]] [[+error:equals=`1`:then=`error`]] fileupload fileupload-new" data-provides="fileupload" [[+containerAttr]] >
+    [[+startElement]]
+    <label for="[[+elementID]]" class="[[+labelClass]]" [[+labelAttr]]>[[+label]]</label>
+    [[+midElement]]
+    <div class="">
+        <div class="uneditable-input span3">
+            <i class="icon-file fileupload-exists"></i> 
+            <span class="fileupload-preview"></span>
+        </div>
+        <span class="btn btn-file">
+            <span class="fileupload-new">Select file</span>
+            <span class="fileupload-exists">Change</span>
+            <input name="[[+name]]" type="file" value="[[+value]]" id="[[+elementID]]" class="[[+class]] input-small" [[+attr]] />
+        </span>
+        <a href="#" class="btn fileupload-exists" data-dismiss="fileupload">Remove</a>
+    </div>
+    
+    [[+value:notempty=`
+    <label for="[[+name]]Remove" class="checkbox inline">
+        <input name="[[+name]]Remove" value="Y" id="[[+name]]Remove" class="checkbox" type="checkbox">
+        Remove uploaded file
+    </label>
+    Download File: <a href="#">[[+value]]</a>
+    `]]
+    
+    [[+childElement]]
+    [[+endElement]]
+    
+</div>

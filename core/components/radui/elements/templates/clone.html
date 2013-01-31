@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clone test</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            function addChildIds ( obj, i ) {
+                obj.children().each(function( index ) {
+                    var chObj = $(this);
+                    //chObj.attr('id', $(this).attr('id')+i );
+                    if ( chObj.attr('id') !== undefined ){
+                        chObj.attr('id', chObj.attr('id')+i );
+                        //console.log("Set ID: " + chObj.attr('id') );
+                    }
+                    if ( chObj.attr('for') !== undefined ){
+                        chObj.attr('for', chObj.attr('for')+i );
+                        //console.log("Set For: " + chObj.attr('for') );
+                    }
+                    if ( chObj.attr('name') !== undefined ){
+                        chObj.attr('name', chObj.attr('name')+i );
+                        //console.log("Set Name: " + chObj.attr('name') );
+                    }
+                    
+                    
+                    //console.log("Child: " + index + ": " + $(this).attr('id') );
+                    chObj = addChildIds(chObj, i );
+                });
+                return obj;
+            }
+            
+            // multi example:
+            $('.cloneBtn').click(function() {
+                var cloneItem = $(this).attr('data-clone');
+                var appendContainer = $(this).attr('data-append');
+                var itemCount = $(this).attr('data-count');
+                
+                var minCount = $(this).attr('data-min');
+                var maxCount = $(this).attr('data-max');
+                var requireCount = $(this).attr('data-require');
+                
+                var count = $('#'+itemCount).val();
+                if ( count >= maxCount ) {
+                    $(this).addClass('disabled');
+                    return true;
+                }
+                count = count * 1 + 1;
+                $('#'+itemCount).val(count);
+                if ( count >= maxCount ) {
+                    // disable for the next time
+                    $(this).addClass('disabled');
+                }
+                 
+                //console.log('Clicked New item: ' + itemCount + " C: "+count);
+                var cloneObject = $('#'+cloneItem).clone();//.append('#container');
+                
+                cloneObject.each(function( index ) {
+                    var obj = $(this);
+                    if ( $(this).attr('id') !== undefined ){
+                        $(this).attr('id', $(this).attr('id')+count );
+                        //console.log("Set ID: " + $(this).attr('id') );
+                    }
+                    if ( $(this).attr('for') !== undefined ){
+                        $(this).attr('for', $(this).attr('for')+count );
+                        //console.log("Set For: " + $(this).attr('for') );
+                    }
+                    if ( $(this).attr('name') !== undefined ){
+                        $(this).attr('name', $(this).attr('name')+count );
+                        //console.log("Set Name: " + $(this).attr('name') );
+                    }
+                    
+                    //console.log( index + ": " + $(this).attr('id') );
+                    obj = addChildIds(obj, count);
+                    
+                });
+                
+                cloneObject.appendTo('#'+appendContainer);
+                // $('.hello').clone().appendTo('.goodbye');
+                if ( count > minCount ) {
+                    $('#'+ appendContainer + ' .removeBtn').removeClass('disabled');
+                }
+            });
+            
+            // Remove/Delete
+             $('.removeBtn').click(function() {
+                var cloneItem = $(this).attr('data-clone');
+                var appendContainer = $(this).attr('data-append');
+                var itemCount = $(this).attr('data-count');
+                
+                var minCount = $(this).attr('data-min');
+                var maxCount = $(this).attr('data-max');
+                var requireCount = $(this).attr('data-require');
+                
+                var count = $('#'+itemCount).val();
+                
+                if ( count <= minCount ) {
+                    $(this).addClass('disabled');
+                    return true;
+                }
+                
+                console.log('Remove item: ' +count);
+                $('#'+cloneItem+count).detach();
+                
+                count = count * 1 - 1;
+                $('#'+itemCount).val(count);
+                
+                if ( count <= minCount ) {
+                    // disable for the next time
+                    $(this).addClass('disabled');
+                }
+                if ( count < maxCount ) {
+                    $('#'+ appendContainer + ' .cloneBtn').removeClass('disabled');
+                }
+            });
+            
+        });
+    </script>
+</head>
+<body>
+    <div id="container">
+        <div id="cloneMe">
+            <p >Clone paragraph...
+                <span id="mySpan">Span..
+                    <strong id="myStrong">Strong</strong>    
+                </span>    
+            </p>
+        </div>
+    </div>
+    
+    <div id="exampleMulti" class="row"> 
+        
+        <button class="cloneBtn" data-clone="item" data-append="exampleMulti" data-count="count" >Add Item</button>
+        <button class="removeBtn" data-clone="item" data-append="exampleMulti" data-count="count" >Remove Last</button>
+        
+        <!-- changable via a JS - how many rows there are:  -->
+        <input name="count" type="hidden" value="1" id="count" />
+        <!-- hidden not changable - but for info in JS -->
+        <input name="count_limit" type="hidden" value="10" id="count_limit" />
+        <input name="count_require" type="hidden" value="2" id="count_require"  />
+        <!-- end none changable -->
+        
+        <div id="item" class="row" > 
+            <div >
+                <label for="fname">First Name</label>
+                <input name="fname" id="fname" type="text" value="" />
+            </div>
+            <button class="deleteBtn" data-row="item">Delete</button>
+        </div>
+        
+        
+    </div>
+    
+    <div class="container">
+        <div class="goodbye">
+            Goodbye
+            <div class="hello">Hello</div>
+        </div>
+    </div>
+    
+    
+    <div id="x2exampleMulti" class="row"> 
+        
+        <button class="cloneBtn" data-clone="x2item" data-append="x2exampleMulti" data-count="x2count" >Add Item</button>
+        <button class="removeBtn" data-clone="x2item" data-append="x2exampleMulti" data-count="x2count" >Remove Last</button>
+        
+        <!-- changable via a JS - how many rows there are:  -->
+        <input name="x2count" type="hidden" value="1" id="x2count" />
+        <!-- hidden not changable - but for info in JS -->
+        <input name="x2count_limit" type="hidden" value="10" id="x2count_limit" />
+        <input name="x2count_require" type="hidden" value="2" id="x2count_require"  />
+        <!-- end none changable -->
+        
+        <div id="x2item" class="row" > 
+            <div >
+                <label for="x2fname">First Name</label>
+                <input name="x2fname" id="x2fname" type="text" value="" />
+            </div>
+            
+            <div class="container">
+                <div class="goodbye">
+                    Goodbye
+                    <div class="hello">Hello</div>
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+    
+</body>
+</html>

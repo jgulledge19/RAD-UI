@@ -63,7 +63,7 @@
     -->
     
     <script src="[[++asset_url:empty=`/assets`]]/components/radui/js/h5validate/jquery.h5validate.js"></script>
-    <script>
+    <script type="text/javascript">
         $(document).ready(function() {
             // $('input').tooltip();
             //$('input').inputmask();
@@ -75,10 +75,135 @@
         $(document).ready(function () {
             $('form').h5Validate();
         });
+        // Multi Items:
+        $(document).ready(function() {
+            function addChildIds ( obj, i ) {
+                obj.children().each(function( index ) {
+                    var chObj = $(this);
+                    //chObj.attr('id', $(this).attr('id')+i );
+                    if ( chObj.attr('id') !== undefined && chObj.attr('id').length > 0 ){
+                        chObj.attr('id', chObj.attr('id')+i );
+                        //console.log("Set ID: " + chObj.attr('id') );
+                    }
+                    if ( chObj.attr('for') !== undefined && chObj.attr('for').length > 0  ){
+                        chObj.attr('for', chObj.attr('for')+i );
+                        //console.log("Set For: " + chObj.attr('for') );
+                    }
+                    if ( chObj.attr('name') !== undefined && chObj.attr('name').length > 0  ){
+                        chObj.attr('name', chObj.attr('name')+i );
+                        //console.log("Set Name: " + chObj.attr('name') );
+                    }
+                    // set value to empty
+                    if ( chObj.is("input") && chObj.attr('value') !== undefined && chObj.attr('value').length > 0 && ( chObj.attr('type') !== undefined || chObj.attr('type') != 'radio' || chObj.attr('type') != 'checkbox'  ) ){
+                        chObj.attr('value', '' );
+                    }
+                    
+                    //console.log("Child: " + index + ": " + $(this).attr('id') );
+                    chObj = addChildIds(chObj, i );
+                });
+                return obj;
+            }
+            
+            // multi example:
+            $('.cloneBtn').click(function() {
+                var cloneItem = $(this).attr('data-clone');
+                var appendContainer = $(this).attr('data-append');
+                var itemCount = $(this).attr('data-count');
+                
+                var minCount = $(this).attr('data-min')*1;
+                var maxCount = $(this).attr('data-max')*1;
+                var requireCount = $(this).attr('data-require')*1;
+                
+                var count = $('#'+itemCount).val();
+                //console.log('ADD Item: ' + itemCount + ' Clone: ' + cloneItem + ' Count: ' + count + ' Min: ' + minCount + ' Max: ' + maxCount + ' R: ' + requireCount);
+                if ( count >= maxCount && maxCount > 0 ) {
+                    $(this).addClass('disabled');
+                    return false;
+                }
+                count = count * 1 + 1;
+                $('#'+itemCount).val(count);
+                if ( count >= maxCount && maxCount > 0 ) {
+                    // disable for the next time
+                    $(this).addClass('disabled');
+                }
+                 
+                //console.log('Clicked New item: ' + itemCount + " C: "+count);
+                var cloneObject = $('#'+cloneItem).clone();//.append('#container');
+                var elCount = 1;
+                cloneObject.each(function( index ) {
+                    var obj = $(this);
+                    if (elCount == 1 ) {
+                        // obj.prepend('<hr />');
+                    }
+                    elCount++;
+                    if ( $(this).attr('id') !== undefined && $(this).attr('id').length > 0 ){
+                        $(this).attr('id', $(this).attr('id')+count );
+                        //console.log("Set ID: " + $(this).attr('id') );
+                    }
+                    if ( $(this).attr('for') !== undefined && $(this).attr('for').length > 0 ){
+                        $(this).attr('for', $(this).attr('for')+count );
+                        //console.log("Set For: " + $(this).attr('for') );
+                    }
+                    if ( $(this).attr('name') !== undefined && $(this).attr('name').length > 0 ){
+                        $(this).attr('name', $(this).attr('name')+count );
+                        //console.log("Set Name: " + $(this).attr('name') );
+                    }
+                    // set value to empty
+                    if ( $(this).is("input") && $(this).attr('value') !== undefined && $(this).attr('value').length > 0 && ( $(this).attr('type') !== undefined || $(this).attr('type') != 'radio' || $(this).attr('type') != 'checkbox'  ) ){
+                        $(this).attr('value', '' );
+                    }
+                    //console.log( index + ": " + $(this).attr('id') );
+                    obj = addChildIds(obj, count);
+                    
+                });
+                // @TODO set values to empty for input:
+                
+                cloneObject.appendTo('#'+appendContainer);
+                if ( count > minCount ) {
+                    $('#'+ appendContainer + ' .removeBtn').removeClass('disabled');
+                }
+                return false;
+            });
+            
+            // Remove/Delete
+             $('.removeBtn').click(function() {
+                var cloneItem = $(this).attr('data-clone');
+                var appendContainer = $(this).attr('data-append');
+                var itemCount = $(this).attr('data-count');
+                
+                var minCount = $(this).attr('data-min')*1;
+                var maxCount = $(this).attr('data-max')*1;
+                var requireCount = $(this).attr('data-require')*1;
+                
+                var count = $('#'+itemCount).val();
+                
+                //console.log('Remove Item: ' + itemCount + ' Clone: ' + cloneItem + ' Count: ' + count + ' Min: ' + minCount + ' Max: ' + maxCount + ' R: ' + requireCount);
+                
+                if ( count <= minCount ) {
+                    $(this).addClass('disabled');
+                    return false;
+                }
+                
+                //console.log('Remove item: ' +count);
+                $('#'+cloneItem+count).detach();
+                //console.log('Remove item: ' + '#' + cloneItem + count);
+                
+                count = count * 1 - 1;
+                $('#'+itemCount).val(count);
+                
+                if ( count <= minCount ) {
+                    // disable for the next time
+                    $(this).addClass('disabled');
+                }
+                if ( count < maxCount ) {
+                    $('#'+ appendContainer + ' .cloneBtn').removeClass('disabled');
+                }
+                return false;
+            });
+        });
     </script>
 
 
-</script>
     [[*embed-css]]
     [[*embed-js]]
 </head>
@@ -109,7 +234,9 @@
         <div class="span3">
           <div class="well sidebar-nav">
             <ul class="nav nav-list">
-                [[!Wayfinder?
+                [[+RadUiFormPages]]
+                <!-- 
+                [ [!Wayfinder?
                     &startId=`2094`
                     &displayStart=`true`
                     &fullLink=`true`
@@ -123,7 +250,7 @@
                        &rowClass=`select`
                        &rowTpl=`rad_rowTpl`
                     &lastClass=`end`
-                ]]
+                ] ] -->
               
             </ul>
           </div><!--/.well -->

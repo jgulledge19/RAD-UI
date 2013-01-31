@@ -1,15 +1,19 @@
-<div id="[[+containterID]]" class="[[+containerClass]]" [[+containerAttr]]> 
+<div id="[[+containerID]]" class="[[+containerClass]]" [[+containerAttr]]> 
     [[+startElement]]
-    <label for="[[+elementID]]" class="[[+labelClass]]" [[+labelAttr]]>[[+label]]</label>
+    <p class="[[+labelClass]]" [[+labelAttr]]>[[+label]]</p>
     [[+midElement]]
-    <!-- changable via a JS -->
+    <a href="[[+currentUrl]]#add-[[+elementID]]" class="cloneBtn btn btn-success [[+addDisable]]" data-min="[[+multiLevel]]" data-max="[[+multiLimit]]" 
+        data-require="[[+multiRequire]]" data-clone="[[+elementID]]_item" data-append="[[+containerID]]" data-count="[[+elementID]]" >
+        <i class="iconic-plus"></i> Add Item</a>
+    <a href="[[+currentUrl]]#remove-[[+elementID]]"  class="removeBtn btn btn-danger [[+removeDisable]]" data-min="[[+multiLevel]]" data-max="[[+multiLimit]]" 
+        data-require="[[+multiRequire]]" data-clone="[[+elementID]]_item" data-append="[[+containerID]]" data-count="[[+elementID]]" >
+        <i class="iconic-x"></i> Remove Last</a>
+    <!-- changable via a JS, shows the current number of items -->
     <input name="[[+name]]" type="hidden" value="[[+value]]" id="[[+elementID]]" [[+attr]] />
-    <!-- hiddens not changable - but for info in JS -->
-    <input name="[[+name]]_limit" type="hidden" value="[[+multiLimit]]" id="[[+elementID]]_limit" [[+attrLimit]] />
-    <input name="[[+name]]_require" type="hidden" value="[[+multiRequire]]" id="[[+elementID]]_require" [[+attrRequire]] />
     <!-- end none changables -->
     
     [[+childElement]]
     [[+endElement]]
+    
     
 </div>

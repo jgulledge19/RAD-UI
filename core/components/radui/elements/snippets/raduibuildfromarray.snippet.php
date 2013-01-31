@@ -68,7 +68,8 @@ while ( $element = $dbElements->fetch(PDO::FETCH_ASSOC) ) {
 // now loop through the build array and save to db
 //require_once $modx->RadUi->getConfig('snippetsPath').'bc/admissionformUpdate.php';
 //require_once $modx->RadUi->getConfig('snippetsPath').'bc/admissionform.php';
-require_once $modx->RadUi->getConfig('snippetsPath').'bc/admissionform2.php';
+//require_once $modx->RadUi->getConfig('snippetsPath').'bc/admissionform2.php';
+require_once $modx->RadUi->getConfig('snippetsPath').'bc/admissionform4.php';
 
 // dbE
 if ( is_array($elements) ) {

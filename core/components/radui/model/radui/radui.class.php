@@ -33,6 +33,12 @@ class RadUi {
     protected $config = array();
     
     /**
+     * Current easyForm DB object 
+     */
+    public $currentForm = null;
+    
+    
+    /**
      * @param (Boolean) $hasBuiltChart
      */
     protected $hasBuiltChart = FALSE;
@@ -264,36 +270,59 @@ class RadUi {
     }
     
     /**
-     * 
+     * Load DB form object 
      * @param (Array) $scriptProperties
      */
-    public function getRadForm($scriptProperties) {
-        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Start ' );
+    public function loadForm($scriptProperties) {
         $form_id = $this->modx->getOption('formID', $scriptProperties, 0);
         $criteria = $form_id;
         if ( $form_id == 0 ){
             $form_name = $this->modx->getOption('formName', $scriptProperties, '');
             $criteria = array('name' => $form_name);
         }
-        $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Build Criteria ' );
         // get form db object
-        $radForm = $this->modx->getObject('RadForm', $criteria );
+        $get_form = true;
+        if ( is_object($this->currentForm) ) {
+            if ( $this->currentForm->get('id') == $form_id || $this->currentForm->get('name') == $form_name ) {
+                //$radForm = &$this->currentForm;
+                $get_form = false;
+            } 
+        }
+        if ( $get_form ){
+            $this->currentForm = $this->modx->getObject('RadForm', $criteria );
+        }
+        if ( !is_object($this->currentForm) ) {
+            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->loadForm] Could not find the form '.print_r($criteria,TRUE) );
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * 
+     * @param (Array) $scriptProperties
+     * @return (String) the generated form
+     */
+    public function getRadForm($scriptProperties) {
         // $radForm->get('id');
-        if ( !is_object($radForm) ) {
-            $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Could not find the form '.print_r($criteria,TRUE) );
+        if ( !$this->loadForm($scriptProperties) ) {
             return 'The form was not found';
         }
         
         // load the form engine
-        $formEngine = $radForm->get('classkey');
+        $formEngine = $this->currentForm->get('classkey');
         if ( $this->modx->loadClass($formEngine, $this->config['raduiPath'], true, true) ) {
-            $options = json_decode($radForm->get('options'), TRUE);
-            $this->form = new $formEngine($this->modx, $scriptProperties, $radForm->get('theme'));
+            $options = json_decode($this->currentForm->get('options'), TRUE);
+            $this->form = new $formEngine($this->modx, $scriptProperties, $this->currentForm->get('theme'));
         } else {
             $this->modx->log(modX::LOG_LEVEL_ERROR,'[RAD-UI->getRadForm] Could not load the '.$formEngine.' class. Path: '.$this->config['modelPath']);
             return 'The form engine '.$formEngine.' was not found';
         }
-        return $this->form->loadEngine($radForm, $scriptProperties);
+        $output = $this->form->loadEngine($this->currentForm, $scriptProperties);
         
+        // load pages to placeholder:
+        $this->form->loadPages($this->currentForm->get('id'), $scriptProperties, true );
+        return $output;
     }
 }

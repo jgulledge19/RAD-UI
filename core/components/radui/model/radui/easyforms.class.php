@@ -766,6 +766,7 @@ class EasyForms {
                      'title' => '',
                      'id' => '', // is this used?
                      'label' => '',
+                     'labelID' => $parent.'Label',
                      'element' => '',
                      'type' => '',
                      'require' => '',
@@ -951,7 +952,7 @@ class EasyForms {
                 $_SESSION['rad_form_instance_id'] = $instance_id = $this->instance->get('id');
             }
         }
-        
+        // LOAD EVENTS
         $continue = true;
         
         $uid = $this->modx->user->get('id');
@@ -1006,6 +1007,7 @@ class EasyForms {
                 if ( isset($this->rank_pages[($this->current_page+1)]) ) {
                     $this->current_page++;
                 }
+                // LOAD EVENTS:
             }
         } elseif ( isset($_GET['page_number']) ) {
             $this->current_page = (int) $_GET['page_number'];

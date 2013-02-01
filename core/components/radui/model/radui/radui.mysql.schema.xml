@@ -75,19 +75,17 @@
 	</object>
 	<object class="RadFormEvents" table="rad_form_events" extends="xPDOSimpleObject">
         <aggregate alias="Element" class="RadFormElements" local="element_id" foreign="id" cardinality="one" owner="foreign" />
-		<field key="element_id" dbtype="int" precision="11" phptype="integer" null="false" default="0" />
-		<field key="snippet_id" dbtype="int" precision="11" phptype="integer" null="false" default="0" />
-		<field key="snippet_name" dbtype="varchar" precision="64" phptype="string" null="true" />
-		<field key="name" dbtype="varchar" precision="64" phptype="string" null="false" />
-		<field key="description" dbtype="text" phptype="string" null="true" />
-		<field key="type" dbtype="set" precision="'Event','Logic','Render','Save'" phptype="string" null="false" default="Event" />
-		<field key="conditions" dbtype="text" phptype="string" null="true" />
+		<field key="element_id" dbtype="int" precision="11" phptype="integer" null="false" default="0" index="index" />
+        <field key="rank" dbtype="int" precision="11" phptype="integer" null="false" default="0" />
+        <field key="fire_on" dbtype="varchar" precision="32" phptype="string" null="false" />
+        <field key="type" dbtype="varchar" precision="64" phptype="string" null="true" default="snippet" />
+        <field key="snippet_name" dbtype="varchar" precision="64" phptype="string" null="true" />
+        <field key="description" dbtype="text" phptype="string" null="true" />
+        <field key="properties" dbtype="text" phptype="string" null="true" />
 
-		<index alias="Search" name="Search" primary="false" unique="false" type="BTREE" >
-			<column key="id" length="" collation="A" null="false" />
-			<column key="element_id" length="" collation="A" null="false" />
-			<column key="name" length="10" collation="A" null="false" />
-		</index>
+        <index alias="Search" name="Search" primary="false" unique="false" type="BTREE" >
+            <column key="element_id" length="" collation="A" null="false" />
+        </index>
 	</object>
 	<object class="RadFormInstances" table="rad_form_instances" extends="xPDOSimpleObject">
         <aggregate alias="Form" class="RadForm" local="form_id" foreign="id" cardinality="one" owner="foreign" />

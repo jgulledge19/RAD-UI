@@ -7,12 +7,12 @@ $xpdo_meta_map['RadFormEvents']= array (
   'fields' => 
   array (
     'element_id' => 0,
-    'snippet_id' => 0,
+    'rank' => 0,
+    'fire_on' => NULL,
+    'type' => 'snippet',
     'snippet_name' => NULL,
-    'name' => NULL,
     'description' => NULL,
-    'type' => 'Event',
-    'conditions' => NULL,
+    'properties' => NULL,
   ),
   'fieldMeta' => 
   array (
@@ -23,14 +23,30 @@ $xpdo_meta_map['RadFormEvents']= array (
       'phptype' => 'integer',
       'null' => false,
       'default' => 0,
+      'index' => 'index',
     ),
-    'snippet_id' => 
+    'rank' => 
     array (
       'dbtype' => 'int',
       'precision' => '11',
       'phptype' => 'integer',
       'null' => false,
       'default' => 0,
+    ),
+    'fire_on' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '32',
+      'phptype' => 'string',
+      'null' => false,
+    ),
+    'type' => 
+    array (
+      'dbtype' => 'varchar',
+      'precision' => '64',
+      'phptype' => 'string',
+      'null' => true,
+      'default' => 'snippet',
     ),
     'snippet_name' => 
     array (
@@ -39,28 +55,13 @@ $xpdo_meta_map['RadFormEvents']= array (
       'phptype' => 'string',
       'null' => true,
     ),
-    'name' => 
-    array (
-      'dbtype' => 'varchar',
-      'precision' => '64',
-      'phptype' => 'string',
-      'null' => false,
-    ),
     'description' => 
     array (
       'dbtype' => 'text',
       'phptype' => 'string',
       'null' => true,
     ),
-    'type' => 
-    array (
-      'dbtype' => 'set',
-      'precision' => '\'Event\',\'Logic\',\'Render\',\'Save\'',
-      'phptype' => 'string',
-      'null' => false,
-      'default' => 'Event',
-    ),
-    'conditions' => 
+    'properties' => 
     array (
       'dbtype' => 'text',
       'phptype' => 'string',
@@ -77,21 +78,9 @@ $xpdo_meta_map['RadFormEvents']= array (
       'type' => 'BTREE',
       'columns' => 
       array (
-        'id' => 
-        array (
-          'length' => '',
-          'collation' => 'A',
-          'null' => false,
-        ),
         'element_id' => 
         array (
           'length' => '',
-          'collation' => 'A',
-          'null' => false,
-        ),
-        'name' => 
-        array (
-          'length' => '10',
           'collation' => 'A',
           'null' => false,
         ),
